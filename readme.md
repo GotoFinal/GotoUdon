@@ -8,6 +8,7 @@ Currently still in-dev, but basic functionality can be already used:
 
 Unsupported stuff that will be added soon:
 - Look ray cast.
+- Is grounded. (currently always true)
 - Simulating actual pickup interactions between user and object.
 - Object ownership.
 - Operation on server time (implemented, but might return completely different values than in vrchat)
@@ -28,9 +29,10 @@ Then you can access new menu:
 ![new menu](https://i.imgur.com/yEXKD7s.png)
 
 If you want to use simulated players its important to provide some avatar prefab and spawn point, if you already have a 
-scene descriptor a tool will try to copy a spawn point from there at first launch. 
+scene descriptor a tool will try to copy a spawn point from there at first launch.  
 ![menu](https://i.imgur.com/Rb7gZMm.png)  
 Any changes to this window are saved, so once you add few player templates you will not need to do it again after launching project again.  
+For avatar prefab I highly recommend using free unity asset [Space Robot Kyle](https://assetstore.unity.com/packages/3d/characters/robots/space-robot-kyle-4696) as I currently only tested this with that single avatar, and colliders might be wrong for other avatars, that might be improved later.  
 
 Then you can just add more players or change some setting, later when in play mode this window will change and display currently connected people:  
 ![runtime menu](https://i.imgur.com/XRZTv1r.png)  
