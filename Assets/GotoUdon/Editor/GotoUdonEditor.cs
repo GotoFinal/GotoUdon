@@ -70,7 +70,12 @@ public class GotoUdonEditor : EditorWindow
 
     private void OnGUI()
     {
-        if (GUILayout.Button("Made by GotoFinal, click to join (or just add me GotoFinal#5189) on discord for help: https://discord.gg/B8hbbax", EditorStyles.helpBox))
+        // TODO: add version checker in next release?
+        if (GUILayout.Button("Version: 1.0.0. Click to check for new version at: https://github.com/GotoFinal/GotoUdon/releases", EditorStyles.helpBox))
+        {
+            Application.OpenURL("https://github.com/GotoFinal/GotoUdon/releases");
+        }
+        if (GUILayout.Button("Click to join (or just add me GotoFinal#5189) on discord for help: https://discord.gg/B8hbbax", EditorStyles.helpBox))
         {
             Application.OpenURL("https://discord.gg/B8hbbax");
         }
