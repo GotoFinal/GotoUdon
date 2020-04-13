@@ -10,6 +10,7 @@ Unsupported stuff that will be added soon:
 - Look ray cast.
 - Is grounded. (currently always true)
 - Simulating actual pickup interactions between user and object.
+- More events that can be called with simple button press.
 - Object ownership.
 - Operation on server time (implemented, but might return completely different values than in vrchat)
 - Tracking data. (currently it just return same data as asking for bones, probably completly invalid)
@@ -43,9 +44,10 @@ Changes made here are not saved, this includes adding new players.
 Additional when you launch play mode this script will attach new component to every object that have udon behaviour components.  
 This component allows you to call some basic events with simple click, you can also click on object in game window to
 cause interaction event to be executed.  
-![debugger](https://i.imgur.com/76BeNMc.png)
+![debugger](https://i.imgur.com/76BeNMc.png)  
+(More events will be added soon, note that some events like player join can be simulated using features described above)
 
-Example video: https://imgur.com/DJ6WTPP
+![tool](https://i.imgur.com/T3wrlqu.gif)
 
 ## Limitations
 This tool can't simulate networking, so you can't use it to see if other players will see valid state of game.  
