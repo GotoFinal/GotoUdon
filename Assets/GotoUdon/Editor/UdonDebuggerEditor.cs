@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 using VRC.Udon;
-using VRC.Udon.Serialization.OdinSerializer.Utilities;
 
 namespace GotoUdon.Editor
 {
@@ -47,7 +46,10 @@ namespace GotoUdon.Editor
         {
             if (GUILayout.Button(name))
             {
-                target.behaviours.ForEach(action);
+                foreach (UdonBehaviour behaviour in target.behaviours)
+                {
+                    action(behaviour);
+                }
             }
         }
 
@@ -55,7 +57,10 @@ namespace GotoUdon.Editor
         {
             if (GUILayout.Button(name))
             {
-                target.behaviours.ForEach(behaviour => action(behaviour, arg1));
+                foreach (UdonBehaviour behaviour in target.behaviours)
+                {
+                    action(behaviour, arg1);
+                }
             }
         }
     }
