@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GotoUdon.Editor;
+using GotoUdon.Editor.VersionChecker;
+using GotoUdon.Utils;
 using GotoUdon.Utils.Editor;
 using GotoUdon.VRC;
 using UnityEditor;
@@ -10,6 +13,8 @@ using Object = UnityEngine.Object;
 [InitializeOnLoad]
 public class GotoUdonEditor : EditorWindow
 {
+    private const string VERSION = "v1.0.1";
+
     // register an event handler when the class is initialized
     static GotoUdonEditor()
     {
@@ -67,18 +72,54 @@ public class GotoUdonEditor : EditorWindow
 
     private const float OPTION_SPACING = 7;
     private const float SECTION_SPACING = 15;
+    private DateTime _lastUpdateCheck = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
+    private ReleaseResponse _updateCheckerResponse = null;
+    private bool _downloading = false;
+
+    private void OnFocus()
+    {
+        if (DateTime.UtcNow.Subtract(_lastUpdateCheck).TotalHours < 1)
+        {
+            return;
+        }
+
+        _lastUpdateCheck = DateTime.UtcNow;
+        CheckForUpdate();
+    }
+
+    private void CheckForUpdate()
+    {
+        GotoLog.Log("Checking for updates");
+        VersionChecker.GetNewestVersion("GotoFinal", "GotoUdon", response => { _updateCheckerResponse = response; });
+    }
+
+    private void UpdateLibrary()
+    {
+        if (_updateCheckerResponse == null || _updateCheckerResponse.IsError) return;
+
+        ReleaseAsset unityPackage = _updateCheckerResponse.ReleaseInfo.UnityPackage;
+        if (unityPackage == null) return;
+
+        _downloading = true;
+        Updater.Update("GotoUdon", _updateCheckerResponse.ReleaseInfo.UnityPackage, result =>
+        {
+            _downloading = false;
+            if (!result.IsError)
+            {
+                AssetDatabase.ImportPackage(result.DownloadPath, true);
+            }
+        });
+    }
 
     private void OnGUI()
     {
-        // TODO: add version checker in next release?
-        if (GUILayout.Button("Version: 1.0.0. Click to check for new version at: https://github.com/GotoFinal/GotoUdon/releases", EditorStyles.helpBox))
+        DrawVersionInformation();
+        string discordUrl = "https://discord.gg/B8hbbax";
+        if (GUILayout.Button($"Click to join (or just add me GotoFinal#5189) on discord for help: {discordUrl}", EditorStyles.helpBox))
         {
-            Application.OpenURL("https://github.com/GotoFinal/GotoUdon/releases");
+            Application.OpenURL(discordUrl);
         }
-        if (GUILayout.Button("Click to join (or just add me GotoFinal#5189) on discord for help: https://discord.gg/B8hbbax", EditorStyles.helpBox))
-        {
-            Application.OpenURL("https://discord.gg/B8hbbax");
-        }
+
         SimpleGUI.WarningBox(true,
             "NETWORK AND VRCHAT PHYSICS ARE NOT SIMULATED, NETWORK RELATED SETTINGS ONLY AFFECT RETURNED VALUES IN SCRIPTS, DEFAULT UNITY PHYSICS APPLIES (might be improved later)");
 
@@ -88,6 +129,42 @@ public class GotoUdonEditor : EditorWindow
         else DrawTemplatesEditor();
 
         GUILayout.EndScrollView();
+    }
+
+    private void DrawVersionInformation()
+    {
+        string githubUrl = "https://github.com/GotoFinal/GotoUdon/releases";
+        // TODO: add version checker in next release?
+        if (_updateCheckerResponse != null)
+        {
+            if (SimpleGUI.WarningBox(_updateCheckerResponse.IsError, _updateCheckerResponse.Error))
+            {
+                if (GUILayout.Button($"Current version: {VERSION}. Click to check for new version at: {githubUrl}", EditorStyles.helpBox))
+                {
+                    Application.OpenURL(githubUrl);
+                }
+
+                return;
+            }
+
+            ReleaseInfo releaseInfo = _updateCheckerResponse.ReleaseInfo;
+            if (releaseInfo.UnityPackage != null && SimpleGUI.InfoBox(releaseInfo.IsNewerThan(VERSION),
+                $"There is new version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
+            )
+            {
+                GUILayout.BeginHorizontal();
+                if (!_downloading)
+                    SimpleGUI.ActionButton($"Update to {releaseInfo.Version}!", UpdateLibrary);
+                SimpleGUI.ActionButton("Download manually.", () => Application.OpenURL(releaseInfo.UnityPackage.DownloadUrl));
+                GUILayout.EndHorizontal();
+                return;
+            }
+        }
+
+        if (GUILayout.Button($"Version: {VERSION}. Click to retry check for new version at: {githubUrl}", EditorStyles.helpBox))
+        {
+            CheckForUpdate();
+        }
     }
 
     private void DrawPlayersEditor()
@@ -168,7 +245,7 @@ public class GotoUdonEditor : EditorWindow
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
             "You need to select some spawn point to use this resource!");
 
-            GUILayout.Label("Global settings");
+        GUILayout.Label("Global settings");
         SimpleGUI.Indent(() =>
         {
             settings.avatarPrefab = SimpleGUI.ObjectField("Avatar prefab", settings.avatarPrefab, false);

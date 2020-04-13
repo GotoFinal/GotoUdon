@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDKBase;
+using GotoUdon.Utils;
 
 namespace GotoUdon.VRC
 {
@@ -183,7 +184,7 @@ namespace GotoUdon.VRC
             float frequency
         )
         {
-            Debug.Log(
+            GotoLog.Log(
                 $"Playing haptic event to ${Name}: {hand} duration: {duration}, amplitude: {amplitude}, frequency: {frequency}");
         }
 
