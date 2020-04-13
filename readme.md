@@ -9,9 +9,10 @@ Currently still in-dev, but basic functionality can be already used:
 Unsupported stuff that will be added soon:
 - Look ray cast.
 - Simulating actual pickup interactions between user and object.
-- Ability to actually move when in play mode like in 3rd person game.
 - Object ownership.
 - Operation on server time (implemented, but might return completely different values than in vrchat)
+- Tracking data. (currently it just return same data as asking for bones, probably completly invalid)
+- Ability to actually move when in play mode like in 3rd person game.
 
 Some of unsupported stuff can be actually already simulated by manually assigning objects to scripts added to objects at runtime, 
 but its not really usable and not tested. But each player contains "SimulatedVRCPlayer" component where you can see.  
