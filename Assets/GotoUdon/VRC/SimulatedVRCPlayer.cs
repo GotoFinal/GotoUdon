@@ -64,6 +64,29 @@ namespace GotoUdon.VRC
             }
         }
 
+        public void OnBecameLocal()
+        {
+            // local player layer
+            SetLayerRecursively(gameObject, 10);
+        }
+
+        public void OnBecameRemote()
+        {
+            // players layer
+            SetLayerRecursively(gameObject, 9);
+        }
+
+        private void SetLayerRecursively(GameObject obj, int newLayer)
+        {
+            if (obj == null) return;
+            obj.layer = newLayer;
+            foreach (Transform child in obj.transform)
+            {
+                if (child == null) continue;
+                SetLayerRecursively(child.gameObject, newLayer);
+            }
+        }
+
         public T SetMetadata<T>(string key, Func<T, T> newValueFunc)
         {
             T newValue = newValueFunc(GetMetadata<T>(key));

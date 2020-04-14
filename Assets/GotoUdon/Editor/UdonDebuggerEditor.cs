@@ -32,9 +32,9 @@ namespace GotoUdon.Editor
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            ActionButton("OnPickup", behaviour => behaviour.OnDestroy());
-            ActionButton("OnPickupUseDown", behaviour => behaviour.OnSpawn());
-            ActionButton("OnPickupUseUp", behaviour => behaviour.OnDrop());
+            ActionButton("OnPickup", behaviour => behaviour.OnPickup());
+            ActionButton("OnPickupUseDown", behaviour => behaviour.OnPickupUseDown());
+            ActionButton("OnPickupUseUp", behaviour => behaviour.OnPickupUseUp());
             GUILayout.EndHorizontal();
 
             // TODO: more interactions

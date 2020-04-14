@@ -62,10 +62,12 @@ namespace GotoUdon.VRC
             if (localPlayer != null)
             {
                 localPlayer.isLocal = false;
+                localPlayer.SimulatedVrcPlayer.OnBecameRemote();
             }
 
             localPlayer = player.VRCPlayer;
             localPlayer.isLocal = true;
+            player.OnBecameLocal();
         }
 
         private bool _hasStarted = false;
@@ -84,6 +86,7 @@ namespace GotoUdon.VRC
             {
                 MakeLocal(player);
             }
+            else player.OnBecameRemote();
 
             // if its first play on startup we delay firing on OnJoin events as this seems to fire before all components are ready in code and might cause weird issues.
             if (_hasStarted)
