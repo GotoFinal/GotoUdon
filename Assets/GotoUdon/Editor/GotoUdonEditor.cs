@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 [InitializeOnLoad]
 public class GotoUdonEditor : EditorWindow
 {
-    private const string VERSION = "v1.0.1";
+    private const string VERSION = "v1.0.2";
 
     // register an event handler when the class is initialized
     static GotoUdonEditor()
@@ -38,11 +38,12 @@ public class GotoUdonEditor : EditorWindow
         }
 
         Instance.OnPlay();
-        foreach (UdonBehaviour udonBehaviour in Object.FindObjectsOfType<UdonBehaviour>())
+        foreach (UdonBehaviour udonBehaviour in Resources.FindObjectsOfTypeAll<UdonBehaviour>())
         {
             GameObject gameObject = udonBehaviour.gameObject;
             if (gameObject == null) return;
-            gameObject.AddComponent<UdonDebugger>();
+            if (gameObject.GetComponent<UdonDebugger>() == null)
+                gameObject.AddComponent<UdonDebugger>();
         }
     }
 
