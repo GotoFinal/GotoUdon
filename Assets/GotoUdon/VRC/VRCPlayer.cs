@@ -62,6 +62,9 @@ namespace GotoUdon.VRC
             _TeleportTo = (player, position, rotation) => TeleportTo(player as VRCPlayer, position, rotation);
             _TeleportToOrientation = (player, position, rotation, spawnOrientation) =>
                 TeleportToOrientation(player as VRCPlayer, position, rotation, spawnOrientation);
+            // Can we emulate that better?
+            _TeleportToOrientationLerp = (player, position, rotation, spawnOrientation, lerp) =>
+                TeleportToOrientation(player as VRCPlayer, position, rotation, spawnOrientation);
             _EnablePickups = (player, enabled) => EnablePickups(player as VRCPlayer, enabled);
             _SetNamePlateColor = (player, color) => SetNamePlateColor(player as VRCPlayer, color);
             _RestoreNamePlateColor = player => RestoreNamePlateColor(player as VRCPlayer);

@@ -1,20 +1,20 @@
 ﻿using System;
-using System.IO;
 using GotoUdon.Utils;
-using UnityEngine;
+using UnityEditor;
 using UnityEngine.Networking;
 
 namespace GotoUdon.Editor.VersionChecker
 {
     public class Updater
     {
-        public static void Update(string path, ReleaseAsset asset, Action<UpdateResult> callback)
+        public static void Update(ReleaseAsset asset, Action<UpdateResult> callback)
         {
             GotoLog.Log($"Downloading update ({asset.Name}) from {asset.DownloadUrl}");
             UnityWebRequest www = UnityWebRequest.Get(asset.DownloadUrl);
             try
             {
-                www.downloadHandler = new DownloadHandlerFile(Path.Combine(Application.dataPath, asset.AsFileName(path)));
+                string downloadLocation = FileUtil.GetUniqueTempPathInProject();
+                www.downloadHandler = new DownloadHandlerFile(downloadLocation);
                 UnityWebRequestAsyncOperation action = www.SendWebRequest();
                 action.completed += operation =>
                 {
@@ -28,7 +28,7 @@ namespace GotoUdon.Editor.VersionChecker
                         return;
                     }
 
-                    callback(new UpdateResult {DownloadPath = "Assets/" + asset.AsFileName(path)});
+                    callback(new UpdateResult {DownloadPath = downloadLocation});
                     www.Dispose();
                 };
             }
