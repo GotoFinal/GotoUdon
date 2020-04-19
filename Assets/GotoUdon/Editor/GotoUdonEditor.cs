@@ -12,7 +12,7 @@ using VRC.Udon;
 [InitializeOnLoad]
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.0.3";
+    public const string VERSION = "v1.0.4";
     public const string ImplementedSDKVersion = "2020.04.17.11.34";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
@@ -87,11 +87,6 @@ public class GotoUdonEditor : EditorWindow
         ReleaseHelper.DrawReleaseHelper();
 #endif
         _updaterEditor.DrawVersionInformation();
-        string discordUrl = "https://discord.gg/B8hbbax";
-        if (GUILayout.Button($"Click to join (or just add me GotoFinal#5189) on discord for help: {discordUrl}", EditorStyles.helpBox))
-        {
-            Application.OpenURL(discordUrl);
-        }
 
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
 
@@ -103,7 +98,24 @@ public class GotoUdonEditor : EditorWindow
         if (EditorApplication.isPlaying) DrawPlayersEditor();
         else DrawTemplatesEditor();
 
+        DrawFooterInformation();
         GUILayout.EndScrollView();
+    }
+
+    private void DrawFooterInformation()
+    {
+        string discordUrl = "https://discord.gg/B8hbbax";
+        if (GUILayout.Button($"Click to join (or just add me GotoFinal#5189) on discord for help: {discordUrl}", EditorStyles.helpBox))
+        {
+            Application.OpenURL(discordUrl);
+        }
+
+        if (GUILayout.Button(
+            "For best experience also try UdonSharp by Merlin and write Udon in C#! https://github.com/Merlin-san/UdonSharp/",
+            EditorStyles.helpBox))
+        {
+            Application.OpenURL("https://github.com/Merlin-san/UdonSharp/");
+        }
     }
 
     private void DrawPlayersEditor()
