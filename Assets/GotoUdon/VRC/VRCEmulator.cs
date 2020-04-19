@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
+using GotoUdon.Utils;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
@@ -153,6 +154,12 @@ namespace GotoUdon.VRC
 
         private static VRCEmulator CreateEmulator(GotoUdonSettings settings)
         {
+            if (!Application.isPlaying)
+            {
+                throw new ApplicationException(
+                    "Something is trying to launch GotoUdon not in play mode, this would cause objects to be permanently added to the scene.");
+            }
+
             VRCEmulator emulator = new VRCEmulator();
             emulator.Init(settings);
             return emulator;
@@ -215,6 +222,7 @@ namespace GotoUdon.VRC
             Networking._GoToRoom = arg => throw ActionNotImplemented("_GoToRoom");
             Networking._CalculateServerDeltaTime = (d, d1) => throw ActionNotImplemented("_CalculateServerDeltaTime");
             Networking._SafeStartCoroutine = enumerator => throw ActionNotImplemented("_SafeStartCoroutine");
+            Networking._GetEventDispatcher = () => throw ActionNotImplemented("_GetEventDispatcher");
         }
 #endif
 
