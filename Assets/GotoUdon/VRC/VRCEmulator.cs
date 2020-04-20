@@ -37,7 +37,7 @@ namespace GotoUdon.VRC
 
         public void Init(GotoUdonSettings settings)
         {
-            if (GotoUdonSettings.Instance.EnableAutomaticPublish) return;
+            if (GotoUdonSettings.Instance.enableAutomaticPublish) return;
 #if UNITY_EDITOR
             RuntimeWorldCreation worldCreation = Object.FindObjectOfType<RuntimeWorldCreation>();
             if (worldCreation != null && worldCreation.pipelineManager != null &&
@@ -46,6 +46,7 @@ namespace GotoUdon.VRC
 
             GameObject emulatorObject = new GameObject("GotoUdonEmulator");
             emulatorObject.AddComponent<VRCEmulatorBehaviour>();
+            emulatorObject.tag = "EditorOnly";
             foreach (PlayerTemplate template in settings.playerTemplates)
             {
                 SpawnPlayer(settings, template);

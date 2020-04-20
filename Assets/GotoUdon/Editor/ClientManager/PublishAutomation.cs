@@ -16,15 +16,15 @@ namespace GotoUdon.Editor.ClientManager
         {
             if (state != PlayModeStateChange.EnteredPlayMode)
             {
-                if (state != PlayModeStateChange.ExitingPlayMode || !GotoUdonSettings.Instance.EnableAutomaticPublish) return;
-                GotoUdonSettings.Instance.EnableAutomaticPublish = false;
+                if (state != PlayModeStateChange.ExitingPlayMode || !GotoUdonSettings.Instance.enableAutomaticPublish) return;
+                GotoUdonSettings.Instance.enableAutomaticPublish = false;
                 EditorUtility.SetDirty(GotoUdonSettings.Instance);
                 AssetDatabase.SaveAssets();
                 ClientManagerEditor.Instance.StartClients();
                 return;
             }
 
-            if (!GotoUdonSettings.Instance.EnableAutomaticPublish) return;
+            if (!GotoUdonSettings.Instance.enableAutomaticPublish) return;
             GameObject gameObject = new GameObject("GotoUdonAutomation");
             gameObject.tag = "EditorOnly";
             gameObject.AddComponent<VRC.SDK.PublishAutomation>();
