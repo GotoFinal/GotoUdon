@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "GotoUdon",
     "references": ["VRC.Udon"],
     "optionalUnityReferences": [],

@@ -4,8 +4,21 @@ using UnityEngine;
 
 namespace GotoUdon.Utils.Editor
 {
-    public class SimpleGUI
+    public static class SimpleGUI
     {
+        private const float OPTION_SPACING = 7;
+        private const float SECTION_SPACING = 15;
+
+        public static void OptionSpacing()
+        {
+            GUILayout.Space(OPTION_SPACING);
+        }
+
+        public static void SectionSpacing()
+        {
+            GUILayout.Space(SECTION_SPACING);
+        }
+
         public static void ActionButton(string name, Action action, params GUILayoutOption[] options)
         {
             if (GUILayout.Button(name, options))
