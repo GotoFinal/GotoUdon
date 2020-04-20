@@ -43,6 +43,9 @@ namespace GotoUdon.VRC
             if (worldCreation != null && worldCreation.pipelineManager != null &&
                 worldCreation.pipelineManager.launchedFromSDKPipeline) return;
 #endif
+
+            GameObject emulatorObject = new GameObject("GotoUdonEmulator");
+            emulatorObject.AddComponent<VRCEmulatorBehaviour>();
             foreach (PlayerTemplate template in settings.playerTemplates)
             {
                 SpawnPlayer(settings, template);
@@ -80,6 +83,19 @@ namespace GotoUdon.VRC
         private bool _hasStarted = false;
         private List<SimulatedVRCPlayer> _delayedPlayers = new List<SimulatedVRCPlayer>();
 
+        public void Update()
+        {
+            if (_hasStarted && _delayedPlayers.Count != 0)
+            {
+                foreach (SimulatedVRCPlayer player in _delayedPlayers)
+                {
+                    ForAllUdon(behaviour => behaviour.OnPlayerJoined(player.VRCPlayer));
+                }
+
+                _delayedPlayers.Clear();
+            }
+        }
+
         public void AddPlayer(SimulatedVRCPlayer player)
         {
             player.gameObject.SetActive(true);
@@ -95,12 +111,7 @@ namespace GotoUdon.VRC
             }
             else player.OnBecameRemote();
 
-            // if its first play on startup we delay firing on OnJoin events as this seems to fire before all components are ready in code and might cause weird issues.
-            if (_hasStarted)
-            {
-                ForAllUdon(behaviour => behaviour.OnPlayerJoined(player.VRCPlayer));
-            }
-            else _delayedPlayers.Add(player);
+            _delayedPlayers.Add(player);
         }
 
         public void OnPlayStart()
@@ -116,8 +127,6 @@ namespace GotoUdon.VRC
 
         public void RemovePlayer(SimulatedVRCPlayer player)
         {
-            player.gameObject.SetActive(false);
-
             ForAllUdon(behaviour => behaviour.OnPlayerLeft(player.VRCPlayer));
 
             VRCPlayerApi.sPlayers.Remove(player.VRCPlayer);
@@ -132,6 +141,8 @@ namespace GotoUdon.VRC
             {
                 MakeLocal(GetAnyPlayer());
             }
+
+            player.gameObject.SetActive(false);
         }
 
         private SimulatedVRCPlayer GetAnyPlayer()
