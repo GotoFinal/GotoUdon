@@ -5,6 +5,7 @@ Currently still in-dev, but basic functionality can be already used:
 - Invoking basic interactions events from editor, or clicking on object in game window.
 - Basic player api functionality, you can change player walk speed and track object to selected bone and check in editor if its working correctly.
 - Player tags.
+- Automatically building and uploading a map and then starting predefined list of VRChat profiles.
 
 Unsupported stuff that will be added soon:
 - Look ray cast.
@@ -26,8 +27,8 @@ Plans for future:
 
 ## How to use
 Go to [releases](https://github.com/GotoFinal/GotoUdon/releases) page and download newest one and just drop it to your assets like any other unity package.  
-Then you can access new menu:  
-![new menu](https://i.imgur.com/yEXKD7s.png)
+Then you can access new menus:  
+![new menu](https://i.imgur.com/OUv7deJ.png)
 
 If you want to use simulated players its important to provide some avatar prefab and spawn point, if you already have a 
 scene descriptor a tool will try to copy a spawn point from there at first launch.  
@@ -48,6 +49,10 @@ cause interaction event to be executed.
 (More events will be added soon, note that some events like player join can be simulated using features described above)
 
 ![tool](https://i.imgur.com/T3wrlqu.gif)
+
+Additionaly you can also test your map in vrchat using multiple clients with just one simple click:  
+![clients](https://i.imgur.com/iMWdBoO.png)  
+Just add few random clients with some profile number (0 is your default one) and then it will start multiple VRChat instances, each one with separate account, you can login to your account and next time you will use this feature all your accounts will be already logged in!
 
 ## Limitations
 This tool can't simulate networking, so you can't use it to see if other players will see valid state of game.  
