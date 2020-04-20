@@ -262,41 +262,49 @@ namespace GotoUdon.VRC
 
         private static float GetGravityStrength(VRCPlayer player)
         {
+            ThrowIfNotLocal(player);
             return player.SimulatedVrcPlayer.gravityStrength;
         }
 
         private static float GetJumpImpulse(VRCPlayer player)
         {
+            ThrowIfNotLocal(player);
             return player.SimulatedVrcPlayer.jumpImpulse;
         }
 
         private static float GetWalkSpeed(VRCPlayer player)
         {
+            ThrowIfNotLocal(player);
             return player.SimulatedVrcPlayer.walkSpeed;
         }
 
         private static float GetRunSpeed(VRCPlayer player)
         {
+            ThrowIfNotLocal(player);
             return player.SimulatedVrcPlayer.runSpeed;
         }
 
         private static void SetGravityStrength(VRCPlayer player, float newGravityStrength)
         {
+            ThrowIfNotLocal(player);
             player.SimulatedVrcPlayer.gravityStrength = newGravityStrength;
         }
 
         private static void SetJumpImpulse(VRCPlayer player, float newJumpImpulse)
         {
+            ThrowIfNotLocal(player);
             player.SimulatedVrcPlayer.jumpImpulse = newJumpImpulse;
         }
 
         private static void SetWalkSpeed(VRCPlayer player, float newWalkSpeed)
         {
+            ThrowIfNotLocal(player);
             player.SimulatedVrcPlayer.walkSpeed = newWalkSpeed;
         }
 
         private static void SetRunSpeed(VRCPlayer player, float newRunSpeed)
         {
+            ThrowIfNotLocal(player);
             player.SimulatedVrcPlayer.runSpeed = newRunSpeed;
         }
 
@@ -468,6 +476,11 @@ namespace GotoUdon.VRC
         private static int GetPlayerId(VRCPlayer player)
         {
             return player.Id;
+        }
+
+        private static void ThrowIfNotLocal(VRCPlayer player)
+        {
+            if (!player.isLocal) throw new ApplicationException("This method will not work on non local player in VRChat!");
         }
 #endif
 
