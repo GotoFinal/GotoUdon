@@ -1,0 +1,1 @@
+﻿This folder can be removed after successful update.

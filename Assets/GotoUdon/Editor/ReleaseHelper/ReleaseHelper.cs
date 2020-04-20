@@ -30,6 +30,9 @@ namespace GotoUdon.Editor.ReleaseHelper
             string assetFolder = Path.Combine(Application.dataPath, "GotoUdon");
             DirectoryInfo directory = new DirectoryInfo(assetFolder);
             FindFilesToExport(directory, filesToExport);
+            assetFolder = Path.Combine(Application.dataPath, "GotoUdonHelper");
+            directory = new DirectoryInfo(assetFolder);
+            FindFilesToExport(directory, filesToExport);
 
             filesToExport = filesToExport.ConvertAll(str => "Assets/" + str.Substring(Application.dataPath.Length + 1));
             return filesToExport.ToArray();
