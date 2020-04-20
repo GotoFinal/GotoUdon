@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
-using GotoUdon.Utils;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRCSDK2;
 using Object = UnityEngine.Object;
 
 namespace GotoUdon.VRC
@@ -37,6 +37,12 @@ namespace GotoUdon.VRC
 
         public void Init(GotoUdonSettings settings)
         {
+            if (GotoUdonSettings.Instance.EnableAutomaticPublish) return;
+#if UNITY_EDITOR
+            RuntimeWorldCreation worldCreation = Object.FindObjectOfType<RuntimeWorldCreation>();
+            if (worldCreation != null && worldCreation.pipelineManager != null &&
+                worldCreation.pipelineManager.launchedFromSDKPipeline) return;
+#endif
             foreach (PlayerTemplate template in settings.playerTemplates)
             {
                 SpawnPlayer(settings, template);
@@ -184,10 +190,12 @@ namespace GotoUdon.VRC
             }
 
             GameObject playerGameObject = new GameObject("Player " + template.playerName);
+            playerGameObject.tag = "EditorOnly";
             playerGameObject.transform.position = spawnPoint.position;
             playerGameObject.transform.rotation = spawnPoint.rotation;
 
             SimulatedVRCPlayer simulatedVrcPlayer = playerGameObject.AddComponent<SimulatedVRCPlayer>();
+            simulatedVrcPlayer.tag = "EditorOnly";
             simulatedVrcPlayer.Initialize(new VRCPlayer(template.playerName), avatar);
 
             if (template.hasVr) simulatedVrcPlayer.PromoteToVRUser();

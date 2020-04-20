@@ -12,7 +12,7 @@ using VRC.Udon;
 [InitializeOnLoad]
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.0.4";
+    public const string VERSION = "v1.0.5";
     public const string ImplementedSDKVersion = "2020.04.17.11.34";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
@@ -23,12 +23,12 @@ public class GotoUdonEditor : EditorWindow
     }
 
     [MenuItem("Window/GotoUdon/Debugger Tools")]
-    public static void ShowWindow()
+    public static GotoUdonEditor ShowWindow()
     {
-        EditorWindow.GetWindow(typeof(GotoUdonEditor));
+        return Instance;
     }
 
-    public static GotoUdonEditor Instance => GetWindow<GotoUdonEditor>();
+    public static GotoUdonEditor Instance => GetWindow<GotoUdonEditor>(false, "GotoUdon Tools");
 
     private static void OnModeChange(PlayModeStateChange state)
     {
@@ -71,9 +71,6 @@ public class GotoUdonEditor : EditorWindow
         VRCEmulator.Destroy();
     }
 
-
-    private const float OPTION_SPACING = 7;
-    private const float SECTION_SPACING = 15;
     private readonly UpdaterEditor _updaterEditor = new UpdaterEditor();
 
     private void OnFocus()
@@ -124,28 +121,28 @@ public class GotoUdonEditor : EditorWindow
         SimpleGUI.ErrorBox(Emulator.GetAmountOfPlayers() == 0,
             "Emulator should not be started without at least one player!");
 
-        GUILayout.Space(OPTION_SPACING);
+        SimpleGUI.OptionSpacing();
         GUILayout.Label("Global settings");
         Emulator.IsNetworkSettled = GUILayout.Toggle(Emulator.IsNetworkSettled, "Is network settled");
 
         GUILayout.Label("Spawned players: ");
-        GUILayout.Space(OPTION_SPACING);
+        SimpleGUI.OptionSpacing();
         foreach (SimulatedVRCPlayer runtimePlayer in RuntimePlayers)
         {
             if (!runtimePlayer.gameObject.activeSelf) continue;
             SimulatedPlayerEditor.DrawActiveRuntimePlayer(Emulator, runtimePlayer);
-            GUILayout.Space(OPTION_SPACING);
+            SimpleGUI.OptionSpacing();
         }
 
-        GUILayout.Space(SECTION_SPACING);
+        SimpleGUI.SectionSpacing();
 
         GUILayout.Label("Available players: ");
-        GUILayout.Space(OPTION_SPACING);
+        SimpleGUI.OptionSpacing();
         foreach (SimulatedVRCPlayer runtimePlayer in RuntimePlayers)
         {
             if (runtimePlayer.gameObject.activeSelf) continue;
             SimulatedPlayerEditor.DrawAvailableRuntimePlayer(Emulator, runtimePlayer);
-            GUILayout.Space(OPTION_SPACING);
+            SimpleGUI.OptionSpacing();
         }
 
         DrawAddPlayerBox();
@@ -165,7 +162,7 @@ public class GotoUdonEditor : EditorWindow
     {
         EditorGUI.BeginChangeCheck();
         DrawGlobalOptions(Settings);
-        GUILayout.Space(SECTION_SPACING);
+        SimpleGUI.SectionSpacing();
 
         List<PlayerTemplate> templates = Settings.playerTemplates;
 
@@ -174,14 +171,14 @@ public class GotoUdonEditor : EditorWindow
         foreach (var template in templates)
         {
             if (PlayerTemplateEditor.DrawPlayerTemplateWithRemoveButton(template)) toRemove = template;
-            GUILayout.Space(OPTION_SPACING);
+            SimpleGUI.OptionSpacing();
         }
 
         templates.Remove(toRemove);
 
         SimpleGUI.ActionButton("Add another player",
             () => templates.Add(PlayerTemplate.CreateNewPlayer(templates.Count == 0)));
-        GUILayout.Space(SECTION_SPACING);
+        SimpleGUI.SectionSpacing();
 
         if (EditorGUI.EndChangeCheck())
             EditorUtility.SetDirty(Settings);
@@ -191,6 +188,7 @@ public class GotoUdonEditor : EditorWindow
 
     private void DrawGlobalOptions(GotoUdonSettings settings)
     {
+        settings.Init();
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
             "You need to select some avatar prefab to use this resource. Recommended one: https://assetstore.unity.com/packages/3d/characters/robots/space-robot-kyle-4696 (remember to import as humanoid avatar)");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
@@ -215,7 +213,6 @@ public class GotoUdonEditor : EditorWindow
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
-
-        Settings.Init();
+        else Settings.Init();
     }
 }
