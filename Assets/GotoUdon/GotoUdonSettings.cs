@@ -9,7 +9,7 @@ namespace GotoUdon.Editor
         // singleton because can't delay udon and we need to be ready to create emulator at any point
         public static GotoUdonSettings Instance;
 
-        public bool EnableAutomaticPublish;
+        public bool enableAutomaticPublish;
         public GameObject avatarPrefab;
         public Transform spawnPoint;
         public List<PlayerTemplate> playerTemplates = new List<PlayerTemplate>();

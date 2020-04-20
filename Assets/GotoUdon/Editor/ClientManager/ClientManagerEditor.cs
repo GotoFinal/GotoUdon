@@ -103,7 +103,7 @@ namespace GotoUdon.Editor.ClientManager
 
         private void StartPublishing()
         {
-            GotoUdonSettings.Instance.EnableAutomaticPublish = true;
+            GotoUdonSettings.Instance.enableAutomaticPublish = true;
             EditorUtility.SetDirty(GotoUdonSettings.Instance);
             EnvConfig.ConfigurePlayerSettings();
             VRC_SdkBuilder.PreBuildBehaviourPackaging();
