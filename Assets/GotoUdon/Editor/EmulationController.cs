@@ -21,6 +21,14 @@ namespace GotoUdon.Editor
         {
             if (state != PlayModeStateChange.EnteredPlayMode)
             {
+                if (state == PlayModeStateChange.EnteredEditMode)
+                {
+                    // TODO: remove in future, was needed to remove stuff added cause bugs
+                    foreach (UdonDebugger udonDebugger in Resources.FindObjectsOfTypeAll<UdonDebugger>())
+                    {
+                        Object.DestroyImmediate(udonDebugger, true);
+                    }
+                }
                 Instance.OnPlayEnd();
                 return;
             }
@@ -29,7 +37,7 @@ namespace GotoUdon.Editor
             foreach (UdonBehaviour udonBehaviour in Resources.FindObjectsOfTypeAll<UdonBehaviour>())
             {
                 GameObject gameObject = udonBehaviour.gameObject;
-                if (gameObject == null) return;
+                if (gameObject == null || gameObject.scene.name == null) return;
                 if (gameObject.GetComponent<UdonDebugger>() == null)
                     gameObject.AddComponent<UdonDebugger>();
             }
