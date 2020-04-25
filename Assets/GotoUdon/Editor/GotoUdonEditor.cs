@@ -11,7 +11,7 @@ using UnityEngine;
 
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.0.7";
+    public const string VERSION = "v1.0.8";
     public const string ImplementedSDKVersion = "2020.04.17.11.34";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
