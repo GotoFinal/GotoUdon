@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.AccessControl;
+﻿using System.Collections.Generic;
 using GotoUdon.Utils;
 using UnityEngine;
 using VRC.Core;
@@ -10,10 +8,13 @@ namespace GotoUdon.Editor.ClientManager
     public class ClientManagerSettings : ScriptableObject
     {
         public string worldId;
+
         public string userId;
+
+        // public bool sendInvitesOnUpdate = true;
         public ApiWorldInstance.AccessType accessType = ApiWorldInstance.AccessType.InviteOnly;
         public List<ClientSettings> clients;
-        public bool compactMode = false;
+        public int sameInstanceRestartDelay = 10;
 
         public string WorldId
         {
@@ -47,7 +48,6 @@ namespace GotoUdon.Editor.ClientManager
                     name = "Default profile",
                     profile = 0,
                     enabled = true,
-                    description = "This will launch your normal vrchat profile.",
                     vr = true
                 });
             }

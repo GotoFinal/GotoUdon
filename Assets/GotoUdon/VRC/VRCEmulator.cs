@@ -32,12 +32,15 @@ namespace GotoUdon.VRC
             set => isNetworkSettled = value;
         }
 
-        public static VRCEmulator Instance => _instance ?? (_instance = InitEmulator(GotoUdonSettings.Instance));
+        public static VRCEmulator Instance =>
+            _instance ?? (_instance = InitEmulator(GotoUdonInternalState.Instance, GotoUdonSettings.Instance));
+
         public static bool IsReady => _instance != null;
 
-        public void Init(GotoUdonSettings settings)
+        public void Init(GotoUdonInternalState state, GotoUdonSettings settings)
         {
-            if (GotoUdonSettings.Instance.enableAutomaticPublish) return;
+            if (state.enableAutomaticPublish) return;
+            if (!settings.enableSimulation) return;
 #if UNITY_EDITOR
             RuntimeWorldCreation worldCreation = Object.FindObjectOfType<RuntimeWorldCreation>();
             if (worldCreation != null && worldCreation.pipelineManager != null &&
@@ -159,10 +162,10 @@ namespace GotoUdon.VRC
             }
         }
 
-        public static VRCEmulator InitEmulator(GotoUdonSettings settings)
+        public static VRCEmulator InitEmulator(GotoUdonInternalState state, GotoUdonSettings settings)
         {
             if (_instance != null) return _instance;
-            return _instance = CreateEmulator(settings);
+            return _instance = CreateEmulator(state, settings);
         }
 
         public static void Destroy()
@@ -170,7 +173,7 @@ namespace GotoUdon.VRC
             _instance = null;
         }
 
-        private static VRCEmulator CreateEmulator(GotoUdonSettings settings)
+        private static VRCEmulator CreateEmulator(GotoUdonInternalState state, GotoUdonSettings settings)
         {
             if (!Application.isPlaying)
             {
@@ -179,12 +182,13 @@ namespace GotoUdon.VRC
             }
 
             VRCEmulator emulator = new VRCEmulator();
-            emulator.Init(settings);
+            emulator.Init(state, settings);
             return emulator;
         }
 
         public void SpawnPlayer(GotoUdonSettings settings, PlayerTemplate template)
         {
+            if (!settings.enableSimulation || GotoUdonInternalState.Instance.enableAutomaticPublish) return;
             Transform spawnPoint = template.spawnPoint == null ? settings.spawnPoint : template.spawnPoint;
             if (spawnPoint == null)
             {
