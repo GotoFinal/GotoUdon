@@ -37,8 +37,7 @@ namespace GotoUdon.Editor
 
         internal VRCEmulator Emulator => VRCEmulator.Instance;
 
-        internal GotoUdonSettings Settings =>
-            GotoUdonSettings.Instance == null ? GotoUdonSettings.Instance = LoadSetting() : GotoUdonSettings.Instance;
+        internal GotoUdonSettings Settings => GotoUdonSettings.Instance;
 
         internal List<SimulatedVRCPlayer> RuntimePlayers => VRCEmulator.Instance.AllPlayers;
 
@@ -54,22 +53,5 @@ namespace GotoUdon.Editor
         }
 
         private readonly UpdaterEditor _updaterEditor = new UpdaterEditor();
-
-        internal static GotoUdonSettings LoadSetting()
-        {
-            if (GotoUdonSettings.Instance != null) return GotoUdonSettings.Instance;
-            GotoUdonSettings.Instance = AssetDatabase.LoadAssetAtPath<GotoUdonSettings>("Assets/GotoUdon/GotoUdonSettings.asset");
-            if (GotoUdonSettings.Instance == null)
-            {
-                GotoUdonSettings.Instance = ScriptableObject.CreateInstance<GotoUdonSettings>();
-                GotoUdonSettings.Instance.Init();
-                AssetDatabase.CreateAsset(GotoUdonSettings.Instance, "Assets/GotoUdon/GotoUdonSettings.asset");
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-            }
-            else GotoUdonSettings.Instance.Init();
-
-            return GotoUdonSettings.Instance;
-        }
     }
 }
