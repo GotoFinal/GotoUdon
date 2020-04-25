@@ -39,7 +39,9 @@ namespace GotoUdon.Editor.ReleaseHelper
         }
 
         private static readonly HashSet<string> blacklistedEndings = new HashSet<string>
-            {".unitypackage", ".asset", ".meta", "/Releases"};
+            {".unitypackage", ".asset", ".meta"};
+        private static readonly HashSet<string> blacklistedFolders = new HashSet<string>
+            {"\\Releases"};
 
         private static void FindFilesToExport(DirectoryInfo directory, List<string> filesToExport)
         {
@@ -52,6 +54,7 @@ namespace GotoUdon.Editor.ReleaseHelper
 
             foreach (DirectoryInfo directoryInfo in directory.GetDirectories())
             {
+                if (blacklistedFolders.Any(blacklisted => directoryInfo.FullName.EndsWith(blacklisted))) continue;
                 FindFilesToExport(directoryInfo, filesToExport);
             }
 #endif
