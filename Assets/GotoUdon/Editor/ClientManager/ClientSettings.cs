@@ -7,6 +7,5 @@
         public int profile;
         public bool enabled;
         public bool vr;
-        public string description;
     }
 }

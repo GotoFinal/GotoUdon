@@ -10,6 +10,8 @@ namespace GotoUdon.Editor
 {
     public class UpdaterEditor
     {
+        internal static readonly UpdaterEditor Instance = new UpdaterEditor();
+
         private DateTime _lastUpdateCheck = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
         private ReleaseResponse _updateCheckerLibraryResponse = null;
         private bool _downloadingUpdate = false;
@@ -72,9 +74,9 @@ namespace GotoUdon.Editor
                 }
 
                 ReleaseInfo releaseInfo = _updateCheckerSdkResponse.ReleaseInfo;
-                if (releaseInfo.UnityPackage != null && SimpleGUI.InfoBox(releaseInfo.IsNewerThan(GotoUdonEditor.CurrentSDKVersion),
-                    "NOTE: This information might be sometimes incorrect due to VRChat team not remembering to bump the version or make typos.\n" +
-                    $"There is new VRChat UDON SDK version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
+                if (releaseInfo.UnityPackage != null && CheckIfItsARealVersionOrATypoMadeByVrchatTeamInFileName(releaseInfo.Version) &&
+                    SimpleGUI.InfoBox(releaseInfo.IsNewerThan(GotoUdonEditor.CurrentSDKVersion),
+                        $"There is new VRChat UDON SDK version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
                 )
                 {
                     GUILayout.BeginHorizontal();
@@ -84,6 +86,11 @@ namespace GotoUdon.Editor
                     GUILayout.EndHorizontal();
                 }
             }
+        }
+
+        private bool CheckIfItsARealVersionOrATypoMadeByVrchatTeamInFileName(string version)
+        {
+            return version != "2020.04.17.11.43";
         }
 
         internal void TryCheckUpdate()

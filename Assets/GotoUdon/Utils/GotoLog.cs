@@ -20,6 +20,11 @@ namespace GotoUdon.Utils
             Debug.LogError("[GotoUdon] " + message);
         }
 
+        public static void Assert(string message)
+        {
+            Debug.LogAssertion("[GotoUdon] " + message);
+        }
+
         public static void Exception(string message, Exception exception)
         {
             Error(message);

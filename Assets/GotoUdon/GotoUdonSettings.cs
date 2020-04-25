@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
+using GotoUdon.Editor;
 using UnityEngine;
 using VRC.SDK3.Components;
 
-namespace GotoUdon.Editor
+namespace GotoUdon
 {
     public class GotoUdonSettings : ScriptableObject
     {
         // singleton because can't delay udon and we need to be ready to create emulator at any point
         public static GotoUdonSettings Instance;
 
-        public bool enableAutomaticPublish;
+        public bool enableSimulation = true;
         public GameObject avatarPrefab;
         public Transform spawnPoint;
         public List<PlayerTemplate> playerTemplates = new List<PlayerTemplate>();

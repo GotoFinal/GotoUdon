@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using GotoUdon;
 using GotoUdon.Editor;
 #if GOTOUDON_DEV
 using GotoUdon.Editor.ReleaseHelper;
@@ -7,20 +8,12 @@ using GotoUdon.Utils.Editor;
 using GotoUdon.VRC;
 using UnityEditor;
 using UnityEngine;
-using VRC.Udon;
 
-[InitializeOnLoad]
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.0.5";
+    public const string VERSION = "v1.0.6";
     public const string ImplementedSDKVersion = "2020.04.17.11.34";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
-
-    // register an event handler when the class is initialized
-    static GotoUdonEditor()
-    {
-        EditorApplication.playModeStateChanged += OnModeChange;
-    }
 
     [MenuItem("Window/GotoUdon/Debugger Tools")]
     public static GotoUdonEditor ShowWindow()
@@ -28,54 +21,15 @@ public class GotoUdonEditor : EditorWindow
         return Instance;
     }
 
-    public static GotoUdonEditor Instance => GetWindow<GotoUdonEditor>(false, "GotoUdon Tools");
+    public static GotoUdonEditor Instance => GetWindow<GotoUdonEditor>(false, "GotoUdon Tools", false);
+    private EmulationController _controller = EmulationController.Instance;
 
-    private static void OnModeChange(PlayModeStateChange state)
-    {
-        if (state != PlayModeStateChange.EnteredPlayMode)
-        {
-            Instance.OnPlayEnd();
-            return;
-        }
-
-        Instance.OnPlay();
-        foreach (UdonBehaviour udonBehaviour in Resources.FindObjectsOfTypeAll<UdonBehaviour>())
-        {
-            GameObject gameObject = udonBehaviour.gameObject;
-            if (gameObject == null) return;
-            if (gameObject.GetComponent<UdonDebugger>() == null)
-                gameObject.AddComponent<UdonDebugger>();
-        }
-    }
-
-    private VRCEmulator Emulator => VRCEmulator.Instance;
-
-    private GotoUdonSettings Settings
-    {
-        get => GotoUdonSettings.Instance;
-        set => GotoUdonSettings.Instance = value;
-    }
-
-    private List<SimulatedVRCPlayer> RuntimePlayers => VRCEmulator.Instance.AllPlayers;
     private PlayerTemplate _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
     private Vector2 _scroll = Vector2.up;
 
-    private void OnPlay()
-    {
-        VRCEmulator.InitEmulator(Settings);
-        Emulator.OnPlayStart();
-    }
-
-    private void OnPlayEnd()
-    {
-        VRCEmulator.Destroy();
-    }
-
-    private readonly UpdaterEditor _updaterEditor = new UpdaterEditor();
-
     private void OnFocus()
     {
-        _updaterEditor.TryCheckUpdate();
+        UpdaterEditor.Instance.TryCheckUpdate();
     }
 
     private void OnGUI()
@@ -83,7 +37,7 @@ public class GotoUdonEditor : EditorWindow
 #if GOTOUDON_DEV
         ReleaseHelper.DrawReleaseHelper();
 #endif
-        _updaterEditor.DrawVersionInformation();
+        UpdaterEditor.Instance.DrawVersionInformation();
 
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
 
@@ -117,20 +71,28 @@ public class GotoUdonEditor : EditorWindow
 
     private void DrawPlayersEditor()
     {
+        GotoUdonSettings settings = _controller.Settings;
+        if (SimpleGUI.WarningBox(!settings.enableSimulation, "Simulation is disabled"))
+        {
+            return;
+        }
+
+        VRCEmulator emulator = _controller.Emulator;
+
         if (SimpleGUI.InfoBox(!VRCEmulator.IsReady, "Waiting for emulation to begin...")) return;
-        SimpleGUI.ErrorBox(Emulator.GetAmountOfPlayers() == 0,
+        SimpleGUI.ErrorBox(emulator.GetAmountOfPlayers() == 0,
             "Emulator should not be started without at least one player!");
 
         SimpleGUI.OptionSpacing();
         GUILayout.Label("Global settings");
-        Emulator.IsNetworkSettled = GUILayout.Toggle(Emulator.IsNetworkSettled, "Is network settled");
+        emulator.IsNetworkSettled = GUILayout.Toggle(emulator.IsNetworkSettled, "Is network settled");
 
         GUILayout.Label("Spawned players: ");
         SimpleGUI.OptionSpacing();
-        foreach (SimulatedVRCPlayer runtimePlayer in RuntimePlayers)
+        foreach (SimulatedVRCPlayer runtimePlayer in _controller.RuntimePlayers)
         {
             if (!runtimePlayer.gameObject.activeSelf) continue;
-            SimulatedPlayerEditor.DrawActiveRuntimePlayer(Emulator, runtimePlayer);
+            SimulatedPlayerEditor.DrawActiveRuntimePlayer(emulator, runtimePlayer);
             SimpleGUI.OptionSpacing();
         }
 
@@ -138,10 +100,10 @@ public class GotoUdonEditor : EditorWindow
 
         GUILayout.Label("Available players: ");
         SimpleGUI.OptionSpacing();
-        foreach (SimulatedVRCPlayer runtimePlayer in RuntimePlayers)
+        foreach (SimulatedVRCPlayer runtimePlayer in _controller.RuntimePlayers)
         {
             if (runtimePlayer.gameObject.activeSelf) continue;
-            SimulatedPlayerEditor.DrawAvailableRuntimePlayer(Emulator, runtimePlayer);
+            SimulatedPlayerEditor.DrawAvailableRuntimePlayer(emulator, runtimePlayer);
             SimpleGUI.OptionSpacing();
         }
 
@@ -153,7 +115,7 @@ public class GotoUdonEditor : EditorWindow
         PlayerTemplateEditor.DrawPlayerTemplate(_currentlyEdited);
         SimpleGUI.ActionButton("Add player", () =>
         {
-            Emulator.SpawnPlayer(Settings, _currentlyEdited);
+            _controller.Emulator.SpawnPlayer(_controller.Settings, _currentlyEdited);
             _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
         });
     }
@@ -161,10 +123,10 @@ public class GotoUdonEditor : EditorWindow
     private void DrawTemplatesEditor()
     {
         EditorGUI.BeginChangeCheck();
-        DrawGlobalOptions(Settings);
+        DrawGlobalOptions(_controller.Settings);
         SimpleGUI.SectionSpacing();
 
-        List<PlayerTemplate> templates = Settings.playerTemplates;
+        List<PlayerTemplate> templates = _controller.Settings.playerTemplates;
 
         GUILayout.Label("Players to create at startup:");
         PlayerTemplate toRemove = null;
@@ -181,7 +143,7 @@ public class GotoUdonEditor : EditorWindow
         SimpleGUI.SectionSpacing();
 
         if (EditorGUI.EndChangeCheck())
-            EditorUtility.SetDirty(Settings);
+            EditorUtility.SetDirty(_controller.Settings);
 
         SimpleGUI.InfoBox(true, "In play mode you will be able to control all created players here, or add more");
     }
@@ -197,6 +159,7 @@ public class GotoUdonEditor : EditorWindow
         GUILayout.Label("Global settings");
         SimpleGUI.Indent(() =>
         {
+            settings.enableSimulation = EditorGUILayout.Toggle("Enable simulation", settings.enableSimulation);
             settings.avatarPrefab = SimpleGUI.ObjectField("Avatar prefab", settings.avatarPrefab, false);
             settings.spawnPoint = SimpleGUI.ObjectField("Spawn point", settings.spawnPoint, true);
         });
@@ -204,15 +167,6 @@ public class GotoUdonEditor : EditorWindow
 
     protected void OnEnable()
     {
-        Settings = AssetDatabase.LoadAssetAtPath<GotoUdonSettings>("Assets/GotoUdon/GotoUdonSettings.asset");
-        if (Settings == null)
-        {
-            Settings = CreateInstance<GotoUdonSettings>();
-            Settings.Init();
-            AssetDatabase.CreateAsset(Settings, "Assets/GotoUdon/GotoUdonSettings.asset");
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-        else Settings.Init();
+        EmulationController.LoadSetting();
     }
 }

@@ -162,6 +162,7 @@ namespace GotoUdon.Editor.VersionChecker
             return result;
         }
 
+#pragma warning disable 0649
         [Serializable]
         private class GithubRespone
         {
@@ -178,4 +179,5 @@ namespace GotoUdon.Editor.VersionChecker
             public string browser_download_url;
         }
     }
+#pragma warning restore 0649
 }
