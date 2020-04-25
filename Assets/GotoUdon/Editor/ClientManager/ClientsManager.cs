@@ -47,14 +47,30 @@ namespace GotoUdon.Editor.ClientManager
 
         public void StartClients(bool restart, bool keepInstance)
         {
+            if (restart)
+            {
+                KillAllClients();
+            }
+
             string instanceId = GetOrGenerateInstanceId(keepInstance, _settings);
             foreach (ClientSettings clientSettings in _settings.clients)
             {
                 if (!clientSettings.enabled) continue;
-                StartClient(restart, keepInstance, clientSettings, false, instanceId);
+                StartClient(restart, keepInstance, clientSettings, true, instanceId);
             }
 
             EditorUtility.SetDirty(GotoUdonInternalState.Instance);
+        }
+
+        private void KillAllClients()
+        {
+            Dictionary<int, GotoUdonInternalState.ClientProcess>
+                processesByProfile = GotoUdonInternalState.Instance.GetProcessesByProfile();
+            foreach (ClientSettings clientSettings in _settings.clients)
+            {
+                if (!clientSettings.enabled || !processesByProfile.ContainsKey(clientSettings.profile)) continue;
+                processesByProfile[clientSettings.profile].StopProcess();
+            }
         }
 
         public void StartClient(bool restart, bool keepInstance, ClientSettings clientSettings, bool save = true, string instance = null)
@@ -81,22 +97,26 @@ namespace GotoUdon.Editor.ClientManager
                 else if (process != null) return;
             }
 
-            Process newClientProcess = SpawnClient(clientSettings, instance, sharedArgs, vrcInstallPath, keepInstance ? 10000 : 0);
-            processesByProfile[profile] = new GotoUdonInternalState.ClientProcess
-            {
-                pid = newClientProcess.Id,
-                profile = profile
-            };
+            SpawnClient(clientSettings, instance, sharedArgs, vrcInstallPath, keepInstance ? 10000 : 0, processesByProfile,
+                (map, spawnedProcess) =>
+                {
+                    GotoUdonInternalState.Instance.processes.RemoveAll(client => client.profile == profile);
+                    GotoUdonInternalState.Instance.processes.Add(new GotoUdonInternalState.ClientProcess
+                    {
+                        pid = spawnedProcess.Id,
+                        profile = profile
+                    });
 
-            internalState.processes = new List<GotoUdonInternalState.ClientProcess>(processesByProfile.Values);
-
-            if (save)
-            {
-                EditorUtility.SetDirty(internalState);
-            }
+                    if (save)
+                    {
+                        EditorUtility.SetDirty(GotoUdonInternalState.Instance);
+                    }
+                });
         }
 
-        private Process SpawnClient(ClientSettings settings, string instance, string sharedArgs, string vrcInstallPath, int delayMs)
+        private void SpawnClient(ClientSettings settings, string instance, string sharedArgs, string vrcInstallPath, int delayMs,
+            Dictionary<int, GotoUdonInternalState.ClientProcess> processMap,
+            Action<Dictionary<int, GotoUdonInternalState.ClientProcess>, Process> callback)
         {
             string args = $"{sharedArgs} --profile={settings.profile} \"--url=launch?id={instance}\"";
             if (!settings.vr) args += " --no-vr";
@@ -121,6 +141,7 @@ namespace GotoUdon.Editor.ClientManager
             {
                 process.Start();
                 process.BeginOutputReadLine();
+                synchronizationContext.Post(_ => callback(processMap, process), process);
             };
             if (delayMs != 0)
             {
@@ -132,8 +153,6 @@ namespace GotoUdon.Editor.ClientManager
                 }).Start();
             }
             else startVrcAction();
-
-            return process;
         }
 
         private string GetOrGenerateInstanceId(bool keepInstance, ClientManagerSettings settings)
