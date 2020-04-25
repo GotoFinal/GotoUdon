@@ -37,7 +37,11 @@ namespace GotoUdon.Editor.ClientManager
             UpdaterEditor.Instance.DrawVersionInformation();
 
             _scroll = GUILayout.BeginScrollView(_scroll, GUIStyle.none);
-            VRCSdkControlPanel.InitAccount();
+            if (!Application.isPlaying)
+            {
+                VRCSdkControlPanel.InitAccount();
+            }
+
             _settings.Init();
             SimpleGUI.InfoBox(true,
                 "Here you can prepare profiles (vrchat --profile=x option) and launch them at once and connect to given world.\n" +
@@ -99,12 +103,16 @@ namespace GotoUdon.Editor.ClientManager
             if (_clientsManager.IsAnyClientRunning())
                 SimpleGUI.ActionButton("Restart", () => _clientsManager.StartClients(true, _keepInstance));
             GUILayout.EndHorizontal();
-            if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null, "Can't find user for auto publish, please log in SDK."))
-            {
-                return;
-            }
 
-            SimpleGUI.ActionButton("Build & Auto Publish & Start", PublishAndTest);
+            if (!Application.isPlaying)
+            {
+                if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null, "Can't find user for auto publish, please log in SDK."))
+                {
+                    return;
+                }
+
+                SimpleGUI.ActionButton("Build & Auto Publish & Start", PublishAndTest);
+            }
         }
 
         private void PublishAndTest()
