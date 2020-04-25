@@ -225,28 +225,36 @@ namespace GotoUdon.VRC
         static VRCEmulator()
         {
             Networking._GetUniqueName = obj => GetGameObjectPath(obj.transform);
-            Networking._RPC = (destination, o, arg3, arg4) => ActionNotImplemented("_RPC");
-            Networking._RPCtoPlayer = (destination, o, arg3, arg4) => ActionNotImplemented("_RPCtoPlayer");
-            Networking._Message = (type, o, arg3) => ActionNotImplemented("_Message");
+            Networking._RPC = (destination, o, arg3, arg4) => { };
+            Networking._RPCtoPlayer = (destination, o, arg3, arg4) => { };
+            Networking._Message = (type, o, arg3) => { };
             Networking._IsNetworkSettled = () => Instance.isNetworkSettled;
             Networking._IsMaster = () => Instance.localPlayer == Instance.master;
             Networking._LocalPlayer = () => Instance.localPlayer;
-            Networking._IsOwner = (player, obj) => player.IsOwner(obj);
-            Networking._SetOwner = (player, obj) => player.TakeOwnership(obj);
-            Networking._IsObjectReady = obj => VRCObject.AsVrcObject(obj).isReady;
-            Networking._GetOwner = obj => VRCObject.AsVrcObject(obj).VRCPlayer;
-            Networking._Destroy = Object.Destroy;
+            Networking._IsOwner = (player, obj) => !GotoUdonSettings.Instance.enableSimulation || player.IsOwner(obj);
+            Networking._SetOwner = (player, obj) =>
+            {
+                if (!GotoUdonSettings.Instance.enableSimulation) return;
+                player.TakeOwnership(obj);
+            };
+            Networking._IsObjectReady = obj => !GotoUdonSettings.Instance.enableSimulation || VRCObject.AsVrcObject(obj).isReady;
+            Networking._GetOwner = obj => GotoUdonSettings.Instance.enableSimulation ? VRCObject.AsVrcObject(obj).VRCPlayer : null;
+            Networking._Destroy = obj =>
+            {
+                if (!GotoUdonSettings.Instance.enableSimulation) return;
+                Object.Destroy(obj);
+            };
             Networking._SceneEventHandler = Object.FindObjectOfType<VRC_EventHandler>;
-            Networking._GetNetworkDateTime = () => DateTime.Now;
-            Networking._GetServerTimeInSeconds = () => Time.fixedTime;
-            Networking._GetServerTimeInMilliseconds = () => DateTime.Now.Millisecond;
-            Networking._Instantiate = (type, s, arg3, arg4) => throw ActionNotImplemented("_Instantiate");
-            Networking._ParameterEncoder = arg => throw ActionNotImplemented("_ParameterEncoder");
-            Networking._ParameterDecoder = arg => throw ActionNotImplemented("_ParameterDecoder");
-            Networking._GoToRoom = arg => throw ActionNotImplemented("_GoToRoom");
-            Networking._CalculateServerDeltaTime = (d, d1) => throw ActionNotImplemented("_CalculateServerDeltaTime");
-            Networking._SafeStartCoroutine = enumerator => throw ActionNotImplemented("_SafeStartCoroutine");
-            Networking._GetEventDispatcher = () => throw ActionNotImplemented("_GetEventDispatcher");
+            Networking._GetNetworkDateTime = () => DateTime.UtcNow;
+            Networking._GetServerTimeInSeconds = () => (double) Time.time;
+            Networking._GetServerTimeInMilliseconds = () => (int) ((double) Time.time * 1000.0);
+            Networking._Instantiate = (type, s, arg3, arg4) => null;
+            Networking._ParameterEncoder = arg => null;
+            Networking._ParameterDecoder = arg => null;
+            Networking._GoToRoom = arg => false;
+            Networking._CalculateServerDeltaTime = (d, d1) => d - d1;
+            Networking._SafeStartCoroutine = enumerator => null;
+            Networking._GetEventDispatcher = () => null;
         }
 #endif
 
