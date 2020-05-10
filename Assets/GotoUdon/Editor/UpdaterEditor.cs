@@ -74,8 +74,13 @@ namespace GotoUdon.Editor
                 }
 
                 ReleaseInfo releaseInfo = _updateCheckerSdkResponse.ReleaseInfo;
-                if (releaseInfo.UnityPackage != null && CheckIfItsARealVersionOrATypoMadeByVrchatTeamInFileName(releaseInfo.Version) &&
-                    SimpleGUI.InfoBox(releaseInfo.IsNewerThan(GotoUdonEditor.CurrentSDKVersion),
+                if (releaseInfo.Version != null)
+                {
+                    releaseInfo.Version = NormalizeVrChatSDKVersion(releaseInfo.Version);
+                }
+
+                if (releaseInfo.UnityPackage != null &&
+                    SimpleGUI.InfoBox(releaseInfo.IsNewerThan(NormalizeVrChatSDKVersion(GotoUdonEditor.CurrentSDKVersion)),
                         $"There is new VRChat UDON SDK version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
                 )
                 {
@@ -88,9 +93,12 @@ namespace GotoUdon.Editor
             }
         }
 
-        private bool CheckIfItsARealVersionOrATypoMadeByVrchatTeamInFileName(string version)
+        private string NormalizeVrChatSDKVersion(string version)
         {
-            return version != "2020.04.17.11.43";
+            int lastIndex = version.LastIndexOf('.');
+            if (lastIndex == -1) return version;
+            lastIndex = version.LastIndexOf('.', lastIndex - 1);
+            return lastIndex == -1 ? version : version.Substring(0, lastIndex);
         }
 
         internal void TryCheckUpdate()
