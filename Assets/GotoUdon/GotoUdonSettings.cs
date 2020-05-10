@@ -36,10 +36,23 @@ namespace GotoUdon
             if (spawnPoint == null)
             {
                 VRCSceneDescriptor descriptor = FindObjectOfType<VRCSceneDescriptor>();
-                if (descriptor != null && descriptor.spawns != null && descriptor.spawns.Length > 0)
+                if (descriptor != null)
                 {
-                    spawnPoint = descriptor.spawns[0];
+                    if (descriptor.spawns != null && descriptor.spawns.Length > 0)
+                        spawnPoint = descriptor.spawns[0];
+                    else spawnPoint = descriptor.transform;
                 }
+
+                // if still null, just try to use anything, maybe camera?
+                if (spawnPoint == null)
+                {
+                    spawnPoint = FindObjectOfType<Camera>()?.transform;
+                }
+            }
+
+            if (avatarPrefab == null)
+            {
+                avatarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GotoUdon/Assets/ybot-mini.prefab");
             }
         }
 
