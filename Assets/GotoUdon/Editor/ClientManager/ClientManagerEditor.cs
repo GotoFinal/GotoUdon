@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using GotoUdon.Utils;
 using GotoUdon.Utils.Editor;
 using UnityEditor;
@@ -55,6 +56,9 @@ namespace GotoUdon.Editor.ClientManager
             _settings.worldId = EditorGUILayout.TextField("World ID", _settings.worldId);
             SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.UserId), "Login to SDK and User ID field will fill up itself");
             _settings.userId = EditorGUILayout.TextField("User ID", _settings.userId);
+            SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.gamePath), "This should be automatically filled from sdk, but if its not, point it to your vrchat.exe");
+            _settings.gamePath = EditorGUILayout.TextField("Game path", _settings.gamePath);
+            _settings.launchOptions = EditorGUILayout.TextField("Launch options", _settings.launchOptions);
             SimpleGUI.ActionButton("Find Current WorldID", () => { _settings.worldId = VRCUtils.FindWorldID(); });
             // _settings.sendInvitesOnUpdate = EditorGUILayout.Toggle("Send invites on world update", _settings.sendInvitesOnUpdate);
             _settings.accessType = (ApiWorldInstance.AccessType) EditorGUILayout.EnumPopup("Access Type", _settings.accessType);
@@ -91,6 +95,11 @@ namespace GotoUdon.Editor.ClientManager
             }
 
             if (SimpleGUI.ErrorBox(_settings.userId == null, "Can't find user id, please log in SDK."))
+            {
+                return;
+            }
+
+            if (SimpleGUI.ErrorBox(!_settings.IsGamePathValid(), "Can't find game executable"))
             {
                 return;
             }

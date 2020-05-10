@@ -76,10 +76,10 @@ namespace GotoUdon.Editor.ClientManager
         public void StartClient(bool restart, bool keepInstance, ClientSettings clientSettings, bool save = true, string instance = null)
         {
             GotoUdonInternalState internalState = GotoUdonInternalState.Instance;
-            string vrcInstallPath = SDKClientUtilities.GetSavedVRCInstallPath();
+            string vrcInstallPath = _settings.gamePath;
             if (instance == null)
                 instance = GetOrGenerateInstanceId(keepInstance, _settings);
-            string sharedArgs = "--enable-debug-gui --enable-sdk-log-levels --enable-udon-debug-logging";
+            string sharedArgs = _settings.launchOptions;
             Dictionary<int, GotoUdonInternalState.ClientProcess>
                 processesByProfile = internalState.GetProcessesByProfile();
 
@@ -114,12 +114,13 @@ namespace GotoUdon.Editor.ClientManager
                 });
         }
 
-        private void SpawnClient(ClientSettings settings, string instance, string sharedArgs, string vrcInstallPath, int delayMs,
+        private void SpawnClient(ClientSettings settings, string instance, string args, string vrcInstallPath, int delayMs,
             Dictionary<int, GotoUdonInternalState.ClientProcess> processMap,
             Action<Dictionary<int, GotoUdonInternalState.ClientProcess>, Process> callback)
         {
-            string args = $"{sharedArgs} --profile={settings.profile} \"--url=launch?id={instance}\"";
-            if (!settings.vr) args += " --no-vr";
+            args = args.Replace("{profile}", settings.profile.ToString());
+            args = args.Replace("{instance}", instance);
+            args = args.Replace("{vr}", settings.vr ? "" : "--no-vr");
             GotoLog.Log($"Starting VRC with arguments: {args}");
             Process process = new Process();
             process.StartInfo = new ProcessStartInfo(vrcInstallPath, args);
