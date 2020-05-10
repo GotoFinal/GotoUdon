@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GotoUdon.Utils;
 using GotoUdon.Utils.Editor;
 using UnityEditor;

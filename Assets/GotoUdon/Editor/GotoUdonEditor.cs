@@ -152,7 +152,7 @@ public class GotoUdonEditor : EditorWindow
     {
         settings.Init();
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
-            "You need to select some avatar prefab to use this resource. Recommended one: https://assetstore.unity.com/packages/3d/characters/robots/space-robot-kyle-4696 (remember to import as humanoid avatar)");
+            "You need to select some avatar prefab to use this resource. You can find ybot-mini in Assets folder with this resource.");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
             "You need to select some spawn point to use this resource!");
 
