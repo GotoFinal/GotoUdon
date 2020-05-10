@@ -74,13 +74,13 @@ namespace GotoUdon.Editor
                 }
 
                 ReleaseInfo releaseInfo = _updateCheckerSdkResponse.ReleaseInfo;
-                if (releaseInfo.Version != null)
-                {
-                    releaseInfo.Version = NormalizeVrChatSDKVersion(releaseInfo.Version);
-                }
+                if (releaseInfo.Version == null) return;
+                string newestSdkVersion = NormalizeVrChatSDKVersion(releaseInfo.Version);
+                string currentSdkVersion = NormalizeVrChatSDKVersion(GotoUdonEditor.CurrentSDKVersion);
 
                 if (releaseInfo.UnityPackage != null &&
-                    SimpleGUI.InfoBox(releaseInfo.IsNewerThan(NormalizeVrChatSDKVersion(GotoUdonEditor.CurrentSDKVersion)),
+                    SimpleGUI.InfoBox(
+                        VersionUtils.IsRightNewerThanLeft(currentSdkVersion, newestSdkVersion),
                         $"There is new VRChat UDON SDK version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
                 )
                 {
