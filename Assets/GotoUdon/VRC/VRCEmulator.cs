@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
+using GotoUdon.Utils;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
@@ -224,9 +225,16 @@ namespace GotoUdon.VRC
 #if UNITY_EDITOR
         static VRCEmulator()
         {
+            UdonBehaviour.RunProgramAsRPCHook = (behaviour, target, evt) => behaviour.SendCustomEvent(evt);
             Networking._GetUniqueName = obj => GetGameObjectPath(obj.transform);
-            Networking._RPC = (destination, o, arg3, arg4) => { };
-            Networking._RPCtoPlayer = (destination, o, arg3, arg4) => { };
+            Networking._RPC = (destination, obj, name, arg) =>
+            {
+                GotoLog.Log($"[Networking] RPC, dest: {destination}, obj: {obj}, name: {name}, args: {string.Join(", ", arg)}");
+            };
+            Networking._RPCtoPlayer = (destination, obj, name, arg) =>
+            {
+                GotoLog.Log($"[Networking] RPCtoPlayer, dest: {destination}, obj: {obj}, name: {name}, args: {string.Join(", ", arg)}");
+            };
             Networking._Message = (type, o, arg3) => { };
             Networking._IsNetworkSettled = () => Instance.isNetworkSettled;
             Networking._IsMaster = () => Instance.localPlayer == Instance.master;
