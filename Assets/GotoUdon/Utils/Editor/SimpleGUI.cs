@@ -12,6 +12,19 @@ namespace GotoUdon.Utils.Editor
         private const float OPTION_SPACING = 7;
         private const float SECTION_SPACING = 15;
 
+        // sometimes I get semi random stack error, might be related to focus, or some unity bug
+        public static bool EndChangeCheck()
+        {
+            try
+            {
+                return EditorGUI.EndChangeCheck();
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
         public static void OptionSpacing()
         {
             GUILayout.Space(OPTION_SPACING);
