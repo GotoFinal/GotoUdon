@@ -11,7 +11,7 @@ using UnityEngine;
 
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.1.1";
+    public const string VERSION = "v1.1.2";
     public const string ImplementedSDKVersion = "2020.04.25.12.49";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
@@ -142,7 +142,7 @@ public class GotoUdonEditor : EditorWindow
             () => templates.Add(PlayerTemplate.CreateNewPlayer(templates.Count == 0)));
         SimpleGUI.SectionSpacing();
 
-        if (EditorGUI.EndChangeCheck())
+        if (SimpleGUI.EndChangeCheck())
             EditorUtility.SetDirty(_controller.Settings);
 
         SimpleGUI.InfoBox(true, "In play mode you will be able to control all created players here, or add more");

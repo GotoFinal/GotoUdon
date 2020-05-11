@@ -71,7 +71,7 @@ namespace GotoUdon.Editor.ClientManager
             DrawClientSection();
             SimpleGUI.SectionSpacing();
 
-            if (EditorGUI.EndChangeCheck())
+            if (SimpleGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(_settings);
                 EditorUtility.SetDirty(GotoUdonInternalState.Instance);

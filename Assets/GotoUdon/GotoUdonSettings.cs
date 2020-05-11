@@ -33,6 +33,7 @@ namespace GotoUdon
             playerTemplates.RemoveAll(obj => obj == null);
 
             // try to use vrc component and get first spawn location
+#if UNITY_EDITOR
             if (spawnPoint == null)
             {
                 VRCSceneDescriptor descriptor = FindObjectOfType<VRCSceneDescriptor>();
@@ -54,6 +55,7 @@ namespace GotoUdon
             {
                 avatarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/GotoUdon/Assets/ybot-mini.prefab");
             }
+#endif
         }
 
         private static GotoUdonSettings LoadSetting()

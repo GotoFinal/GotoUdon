@@ -114,7 +114,6 @@ namespace GotoUdon.Editor
 
         private void ForceCheckForUpdate()
         {
-            GotoLog.Log("Checking for updates");
             GetNewestVersion("GotoFinal", "GotoUdon", response => { _updateCheckerLibraryResponse = response; });
             GetNewestSdkVersion(response => { _updateCheckerSdkResponse = response; });
         }
