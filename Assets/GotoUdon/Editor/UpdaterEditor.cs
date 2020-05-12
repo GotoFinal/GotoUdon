@@ -78,6 +78,9 @@ namespace GotoUdon.Editor
                 string newestSdkVersion = NormalizeVrChatSDKVersion(releaseInfo.Version);
                 string currentSdkVersion = NormalizeVrChatSDKVersion(GotoUdonEditor.CurrentSDKVersion);
 
+                // I give up
+                if (currentSdkVersion.EndsWith("05.06") && newestSdkVersion.EndsWith("05.12")) return;
+
                 if (releaseInfo.UnityPackage != null &&
                     SimpleGUI.InfoBox(
                         VersionUtils.IsRightNewerThanLeft(currentSdkVersion, newestSdkVersion),

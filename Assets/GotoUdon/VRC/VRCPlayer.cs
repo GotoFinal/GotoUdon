@@ -256,8 +256,6 @@ namespace GotoUdon.VRC
             {
                 vrcDestructible = player.gameObject.AddComponent<VRCDestructible>();
             }
-
-            vrcDestructible.Setup();
         }
 
         private static float GetGravityStrength(VRCPlayer player)
