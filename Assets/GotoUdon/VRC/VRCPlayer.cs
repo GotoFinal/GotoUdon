@@ -13,6 +13,7 @@ namespace GotoUdon.VRC
     public class VRCPlayer : VRCPlayerApi
     {
         private static int _idCounter;
+        private static HashSet<int> usedIds = new HashSet<int>();
 
         public readonly int Id;
         private SimulatedVRCPlayer _simulatedVrcPlayer;
@@ -37,7 +38,12 @@ namespace GotoUdon.VRC
         {
             isLocal = false;
             displayName = name;
-            Id = _idCounter++;
+            while (usedIds.Contains(_idCounter))
+            {
+                _idCounter += 1;
+            }
+            Id = _idCounter;
+            usedIds.Add(Id);
         }
         
         public VRCPlayer(string name, int id)
@@ -45,6 +51,7 @@ namespace GotoUdon.VRC
             isLocal = false;
             displayName = name;
             Id = id;
+            usedIds.Add(id);
         }
 
         #region vrchatDelegates

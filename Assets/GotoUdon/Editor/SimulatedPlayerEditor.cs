@@ -34,8 +34,11 @@ namespace GotoUdon.Editor
             SimpleGUI.ActionButton("Make Local", () => emulator.MakeLocal(player));
             GUILayout.EndHorizontal();
 
-            AvatarChangeDialog(player);
-            TagsDialog(player);
+            SimpleGUI.DrawFoldout(player, "More settings", () =>
+            {
+                AvatarChangeDialog(player);
+                TagsDialog(player);
+            });
         }
 
         private static void TagsDialog(SimulatedVRCPlayer player)
