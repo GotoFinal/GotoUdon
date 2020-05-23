@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if GOTOUDON_SIMULATION
+using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
 using GotoUdon.Utils;
@@ -213,7 +214,14 @@ namespace GotoUdon.VRC
 
             SimulatedVRCPlayer simulatedVrcPlayer = playerGameObject.AddComponent<SimulatedVRCPlayer>();
             simulatedVrcPlayer.tag = "EditorOnly";
-            simulatedVrcPlayer.Initialize(new VRCPlayer(template.playerName), avatar);
+            if (template.customId != -1)
+            {
+                simulatedVrcPlayer.Initialize(new VRCPlayer(template.playerName, template.customId), avatar);
+            }
+            else
+            {
+                simulatedVrcPlayer.Initialize(new VRCPlayer(template.playerName), avatar);
+            }
 
             if (template.hasVr) simulatedVrcPlayer.PromoteToVRUser();
             playerGameObject.SetActive(false);
@@ -290,3 +298,4 @@ namespace GotoUdon.VRC
         }
     }
 }
+#endif

@@ -1,4 +1,4 @@
-﻿using System;
+﻿#if GOTOUDON_SIMULATION
 using UnityEngine;
 
 namespace GotoUdon.VRC
@@ -11,3 +11,4 @@ namespace GotoUdon.VRC
         }
     }
 }
+#endif

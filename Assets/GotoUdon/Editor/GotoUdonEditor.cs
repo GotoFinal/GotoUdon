@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using GotoUdon;
 using GotoUdon.Editor;
+using GotoUdon.Utils;
 #if GOTOUDON_DEV
 using GotoUdon.Editor.ReleaseHelper;
 #endif
@@ -22,9 +23,6 @@ public class GotoUdonEditor : EditorWindow
     }
 
     public static GotoUdonEditor Instance => GetWindow<GotoUdonEditor>(false, "GotoUdon Tools", false);
-    private EmulationController _controller = EmulationController.Instance;
-
-    private PlayerTemplate _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
     private Vector2 _scroll = Vector2.up;
 
     private void OnFocus()
@@ -39,7 +37,10 @@ public class GotoUdonEditor : EditorWindow
 #endif
         UpdaterEditor.Instance.DrawVersionInformation();
 
+
+#if GOTOUDON_SIMULATION
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
+#endif
 
         SimpleGUI.WarningBox(true,
             "NETWORK AND VRCHAT PHYSICS ARE NOT SIMULATED, NETWORK RELATED SETTINGS ONLY AFFECT RETURNED VALUES IN SCRIPTS, DEFAULT UNITY PHYSICS APPLIES (might be improved later)");
@@ -49,25 +50,14 @@ public class GotoUdonEditor : EditorWindow
         if (EditorApplication.isPlaying) DrawPlayersEditor();
         else DrawTemplatesEditor();
 
-        DrawFooterInformation();
+        SimpleGUI.DrawFooterInformation();
         GUILayout.EndScrollView();
     }
 
-    private void DrawFooterInformation()
-    {
-        string discordUrl = "https://discord.gg/B8hbbax";
-        if (GUILayout.Button($"Click to join (or just add me GotoFinal#5189) on discord for help: {discordUrl}", EditorStyles.helpBox))
-        {
-            Application.OpenURL(discordUrl);
-        }
+#if GOTOUDON_SIMULATION
+    private EmulationController _controller = EmulationController.Instance;
 
-        if (GUILayout.Button(
-            "For best experience also try UdonSharp by Merlin and write Udon in C#! https://github.com/Merlin-san/UdonSharp/",
-            EditorStyles.helpBox))
-        {
-            Application.OpenURL("https://github.com/Merlin-san/UdonSharp/");
-        }
-    }
+    private PlayerTemplate _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
 
     private void DrawPlayersEditor()
     {
@@ -115,18 +105,24 @@ public class GotoUdonEditor : EditorWindow
         PlayerTemplateEditor.DrawPlayerTemplate(_currentlyEdited);
         SimpleGUI.ActionButton("Add player", () =>
         {
-            _controller.Emulator.SpawnPlayer(_controller.Settings, _currentlyEdited);
+            _controller.Emulator.SpawnPlayer(GotoUdonSettings.Instance, _currentlyEdited);
             _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
         });
     }
+#else
+    private void DrawPlayersEditor()
+    {
+    }
+#endif
 
     private void DrawTemplatesEditor()
     {
         EditorGUI.BeginChangeCheck();
-        DrawGlobalOptions(_controller.Settings);
+        DrawGlobalOptions(GotoUdonSettings.Instance);
         SimpleGUI.SectionSpacing();
 
-        List<PlayerTemplate> templates = _controller.Settings.playerTemplates;
+#if GOTOUDON_SIMULATION
+        List<PlayerTemplate> templates = GotoUdonSettings.Instance.playerTemplates;
 
         GUILayout.Label("Players to create at startup:");
         PlayerTemplate toRemove = null;
@@ -143,14 +139,25 @@ public class GotoUdonEditor : EditorWindow
         SimpleGUI.SectionSpacing();
 
         if (SimpleGUI.EndChangeCheck())
-            EditorUtility.SetDirty(_controller.Settings);
+            EditorUtility.SetDirty(GotoUdonSettings.Instance);
 
         SimpleGUI.InfoBox(true, "In play mode you will be able to control all created players here, or add more");
+#endif
     }
 
     private void DrawGlobalOptions(GotoUdonSettings settings)
     {
         settings.Init();
+        if (!settings.IsSimulatorInstalled)
+        {
+            SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
+        }
+        else
+        {
+            SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
+        }
+
+#if GOTOUDON_SIMULATION
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
             "You need to select some avatar prefab to use this resource. You can find ybot-mini in Assets folder with this resource.");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
@@ -163,6 +170,20 @@ public class GotoUdonEditor : EditorWindow
             settings.avatarPrefab = SimpleGUI.ObjectField("Avatar prefab", settings.avatarPrefab, false);
             settings.spawnPoint = SimpleGUI.ObjectField("Spawn point", settings.spawnPoint, true);
         });
+        
+        // nah, not really working
+        // SimpleGUI.DrawFoldout(this, "Advanced settings", () =>
+        // {
+        //     SimpleGUI.WarningBox(true,
+        //         "Enabling vrchat client mode might cause some issues, but also allow to test your scripts with secure heap enabled\n" +
+        //         "This will add or remove VRC_CLIENT define for compiler, meaning that all internal sdk code will think its running on client and not in editor.\n" +
+        //         "Use at own risk.");
+        //     string VRC_CLIENT = "VRC_CLIENT";
+        //     bool vrchatClientMode = UnityCompilerUtils.IsDefineEnabled(VRC_CLIENT);
+        //     string buttonName = vrchatClientMode ? "Use vrchat editor mode" : "Use vrchat client mode";
+        //     SimpleGUI.ActionButton(buttonName, () => UnityCompilerUtils.SetDefineEnabled(VRC_CLIENT, !vrchatClientMode));
+        // });
+#endif
     }
 
     protected void OnEnable()

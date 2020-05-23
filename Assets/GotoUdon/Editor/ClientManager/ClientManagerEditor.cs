@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using GotoUdon.Utils;
 using GotoUdon.Utils.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -43,29 +42,35 @@ namespace GotoUdon.Editor.ClientManager
             }
 
             _settings.Init();
-            SimpleGUI.InfoBox(true,
-                "Here you can prepare profiles (vrchat --profile=x option) and launch them at once and connect to given world.\n" +
-                "Each profile can be logged in to other vrchat account, allowing you for simple testing.\n" +
-                "You can also disable some profiles, this will just simply ignore them when using button to start all clients.\n" +
-                "Keeping instance might cause issues on restart with multiple clients, vrchat servers might still think you are trying to join twice.");
+            SimpleGUI.DrawFoldout(this, "Help", () =>
+            {
+                SimpleGUI.InfoBox(true,
+                    "Here you can prepare profiles (vrchat --profile=x option) and launch them at once and connect to given world.\n" +
+                    "Each profile can be logged in to other vrchat account, allowing you for simple testing.\n" +
+                    "You can also disable some profiles, this will just simply ignore them when using button to start all clients.\n" +
+                    "Keeping instance might cause issues on restart with multiple clients, vrchat servers might still think you are trying to join twice.");
+            });
 
             EditorGUI.BeginChangeCheck();
-            SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.WorldId),
-                "Make sure your world have a vrc descriptor and you are logged in to SDK, then world id field will be filled up automatically.");
-            _settings.worldId = EditorGUILayout.TextField("World ID", _settings.worldId);
-            SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.UserId), "Login to SDK and User ID field will fill up itself");
-            _settings.userId = EditorGUILayout.TextField("User ID", _settings.userId);
-            SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.gamePath), "This should be automatically filled from sdk, but if its not, point it to your vrchat.exe");
-            _settings.gamePath = EditorGUILayout.TextField("Game path", _settings.gamePath);
-            _settings.launchOptions = EditorGUILayout.TextField("Launch options", _settings.launchOptions);
-            SimpleGUI.ActionButton("Find Current WorldID", () => { _settings.worldId = VRCUtils.FindWorldID(); });
-            // _settings.sendInvitesOnUpdate = EditorGUILayout.Toggle("Send invites on world update", _settings.sendInvitesOnUpdate);
-            _settings.accessType = (ApiWorldInstance.AccessType) EditorGUILayout.EnumPopup("Access Type", _settings.accessType);
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Same room restart wait time (s)", GUILayout.Width(200));
-            _settings.sameInstanceRestartDelay = EditorGUILayout.IntField(_settings.sameInstanceRestartDelay, GUILayout.Width(30));
-            GUILayout.EndHorizontal();
+            SimpleGUI.DrawFoldout(this, "Advanced settings", () =>
+            {
+                SimpleGUI.WarningBox(string.IsNullOrWhiteSpace(_settings.WorldId),
+                    "Missing world. Make sure your world have a vrc world descriptor and you are logged in to SDK.");
+                SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.UserId), "Login to SDK and User ID field will fill up itself");
+                _settings.userId = EditorGUILayout.TextField("User ID", _settings.userId);
+                SimpleGUI.InfoBox(string.IsNullOrWhiteSpace(_settings.gamePath),
+                    "This should be automatically filled from sdk, but if its not, point it to your vrchat.exe");
+                _settings.gamePath = EditorGUILayout.TextField("Game path", _settings.gamePath);
+                _settings.launchOptions = EditorGUILayout.TextField("Launch options", _settings.launchOptions);
+                // _settings.sendInvitesOnUpdate = EditorGUILayout.Toggle("Send invites on world update", _settings.sendInvitesOnUpdate);
+                _settings.accessType = (ApiWorldInstance.AccessType) EditorGUILayout.EnumPopup("Access Type", _settings.accessType);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Same room restart wait time (s)", GUILayout.Width(200));
+                _settings.sameInstanceRestartDelay = EditorGUILayout.IntField(_settings.sameInstanceRestartDelay, GUILayout.Width(30));
+                GUILayout.EndHorizontal();
+            });
 
             SimpleGUI.SectionSpacing();
             DrawClientSection();
@@ -77,6 +82,7 @@ namespace GotoUdon.Editor.ClientManager
                 EditorUtility.SetDirty(GotoUdonInternalState.Instance);
             }
 
+            SimpleGUI.DrawFooterInformation();
             GUILayout.EndScrollView();
         }
 
@@ -88,7 +94,7 @@ namespace GotoUdon.Editor.ClientManager
 
             SimpleGUI.SectionSpacing();
 
-            if (SimpleGUI.ErrorBox(_settings.worldId == null, "Can't start clients, missing WorldID"))
+            if (SimpleGUI.ErrorBox(_settings.WorldId == null, "Can't start clients, missing WorldID"))
             {
                 return;
             }

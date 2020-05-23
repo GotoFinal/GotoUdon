@@ -22,6 +22,7 @@ namespace GotoUdon.Editor
             playerTemplate.playerName = EditorGUILayout.TextField("Name", playerTemplate.playerName);
             playerTemplate.avatarPrefab = SimpleGUI.ObjectField("Custom avatar", playerTemplate.avatarPrefab, false);
             playerTemplate.spawnPoint = SimpleGUI.ObjectField("Custom spawn point", playerTemplate.spawnPoint, true);
+            playerTemplate.customId = EditorGUILayout.IntField("Custom id", playerTemplate.customId);
 
             GUILayout.BeginHorizontal();
 

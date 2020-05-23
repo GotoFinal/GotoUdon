@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if GOTOUDON_SIMULATION
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -111,3 +112,4 @@ namespace GotoUdon.Editor
         }
     }
 }
+#endif
