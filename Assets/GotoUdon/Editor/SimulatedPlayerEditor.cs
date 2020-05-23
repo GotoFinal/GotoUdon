@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if GOTOUDON_SIMULATION
+using System.Collections.Generic;
 using GotoUdon.Utils.Editor;
 using GotoUdon.VRC;
 using UnityEditor;
@@ -118,3 +119,4 @@ namespace GotoUdon.Editor
         }
     }
 }
+#endif

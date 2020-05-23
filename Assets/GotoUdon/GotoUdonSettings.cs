@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using GotoUdon.Editor;
+using GotoUdon.Utils;
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Components;
@@ -16,6 +17,14 @@ namespace GotoUdon
         public GameObject avatarPrefab;
         public Transform spawnPoint;
         public List<PlayerTemplate> playerTemplates = new List<PlayerTemplate>();
+
+        private const string SIMULATOR_DEFINE = "GOTOUDON_SIMULATION";
+
+        public bool IsSimulatorInstalled
+        {
+            get => UnityCompilerUtils.IsDefineEnabled(SIMULATOR_DEFINE);
+            set => UnityCompilerUtils.SetDefineEnabled(SIMULATOR_DEFINE, value);
+        }
 
         public void Init()
         {

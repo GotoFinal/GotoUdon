@@ -165,7 +165,7 @@ namespace GotoUdon.Editor.ClientManager
                 return InstanceId = CreateNewInstanceId(settings);
             }
 
-            if (InstanceId.Split(':')[0] != settings.worldId)
+            if (InstanceId.Split(':')[0] != settings.WorldId)
             {
                 internalState.accessType = settings.accessType.ToString();
                 return InstanceId = CreateNewInstanceId(settings);
@@ -178,7 +178,7 @@ namespace GotoUdon.Editor.ClientManager
         {
             int instanceIndex = Random.Range(1, 99999);
             string accessTags = ApiWorldInstance.BuildAccessTags(settings.accessType, settings.userId);
-            return settings.worldId + ":" + instanceIndex + accessTags;
+            return settings.WorldId + ":" + instanceIndex + accessTags;
         }
     }
 }

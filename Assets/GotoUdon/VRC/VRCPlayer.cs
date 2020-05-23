@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if GOTOUDON_SIMULATION
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -37,6 +38,13 @@ namespace GotoUdon.VRC
             isLocal = false;
             displayName = name;
             Id = _idCounter++;
+        }
+        
+        public VRCPlayer(string name, int id)
+        {
+            isLocal = false;
+            displayName = name;
+            Id = id;
         }
 
         #region vrchatDelegates
@@ -485,3 +493,4 @@ namespace GotoUdon.VRC
         #endregion
     }
 }
+#endif

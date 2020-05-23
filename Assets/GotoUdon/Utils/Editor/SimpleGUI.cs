@@ -91,6 +91,28 @@ namespace GotoUdon.Utils.Editor
             return EditorGUILayout.ObjectField(label, obj, typeof(T), allowSceneObjects, options) as T;
         }
 
+        private static Dictionary<object, bool> foldouts = new Dictionary<object, bool>();
+
+        public static bool DrawFoldout(object key, string title, bool defaultState = false)
+        {
+            key = new Tuple<object, string>(key, title);
+            if (!foldouts.ContainsKey(key))
+                foldouts[key] = defaultState;
+
+            return foldouts[key] = EditorGUILayout.Foldout(foldouts[key], title, true);
+        }
+
+        public static bool DrawFoldout(object key, string title, Action foldout, bool defaultState = false)
+        {
+            if (DrawFoldout(key, title, defaultState))
+            {
+                Indent(foldout);
+                return true;
+            }
+
+            return false;
+        }
+
         public static void DrawSetOptionHorizontal<T>(string label, ICollection<T> enabledStates, T state, int width)
         {
             EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(width));
@@ -113,6 +135,24 @@ namespace GotoUdon.Utils.Editor
             r.x -= 2;
             r.width += 6;
             EditorGUI.DrawRect(r, color);
+        }
+
+        public static void DrawFooterInformation()
+        {
+            if (!DrawFoldout("Footer", "Contact", true))
+                return;
+            string discordUrl = "https://discord.gg/B8hbbax";
+            if (GUILayout.Button($"Click to join (or just add me GotoFinal#5189) on discord for help: {discordUrl}", EditorStyles.helpBox))
+            {
+                Application.OpenURL(discordUrl);
+            }
+
+            if (GUILayout.Button(
+                "For best experience also try UdonSharp by Merlin and write Udon in C#! https://github.com/Merlin-san/UdonSharp/",
+                EditorStyles.helpBox))
+            {
+                Application.OpenURL("https://github.com/Merlin-san/UdonSharp/");
+            }
         }
     }
 }

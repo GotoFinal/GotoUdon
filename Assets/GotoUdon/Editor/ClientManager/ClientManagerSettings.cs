@@ -10,8 +10,6 @@ namespace GotoUdon.Editor.ClientManager
 {
     public class ClientManagerSettings : ScriptableObject
     {
-        public string worldId;
-
         public string userId;
 
         public string gamePath;
@@ -23,11 +21,7 @@ namespace GotoUdon.Editor.ClientManager
         public List<ClientSettings> clients;
         public int sameInstanceRestartDelay = 10;
 
-        public string WorldId
-        {
-            get => !string.IsNullOrWhiteSpace(worldId) ? worldId : worldId = VRCUtils.FindWorldID();
-            set => worldId = value;
-        }
+        public string WorldId => VRCUtils.FindWorldID();
 
         public string UserId
         {
@@ -58,7 +52,6 @@ namespace GotoUdon.Editor.ClientManager
 
         public void Init()
         {
-            if (worldId == null) worldId = VRCUtils.FindWorldID();
             if (userId == null) userId = APIUser.CurrentUser?.id;
             if (gamePath == null) gamePath = SDKClientUtilities.GetSavedVRCInstallPath();
             else if (!IsGamePathValid() && new FileInfo(SDKClientUtilities.GetSavedVRCInstallPath()).Exists)

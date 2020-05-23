@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if GOTOUDON_SIMULATION
+using UnityEngine;
 using VRC.SDKBase;
 
 namespace GotoUdon.VRC
@@ -21,3 +22,4 @@ namespace GotoUdon.VRC
         }
     }
 }
+#endif

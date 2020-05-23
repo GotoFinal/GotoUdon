@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if GOTOUDON_SIMULATION
+using System.Collections.Generic;
 using GotoUdon.VRC;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +10,8 @@ namespace GotoUdon.Editor
     [InitializeOnLoad]
     public class EmulationController
     {
+        internal GotoUdonSettings Settings => GotoUdonSettings.Instance;
+        
         // register an event handler when the class is initialized
         static EmulationController()
         {
@@ -45,13 +48,11 @@ namespace GotoUdon.Editor
 
         internal VRCEmulator Emulator => VRCEmulator.Instance;
 
-        internal GotoUdonSettings Settings => GotoUdonSettings.Instance;
-
         internal List<SimulatedVRCPlayer> RuntimePlayers => VRCEmulator.Instance.AllPlayers;
 
         private void OnPlay()
         {
-            VRCEmulator.InitEmulator(GotoUdonInternalState.Instance, Settings);
+            VRCEmulator.InitEmulator(GotoUdonInternalState.Instance, GotoUdonSettings.Instance);
             Emulator.OnPlayStart();
         }
 
@@ -59,7 +60,6 @@ namespace GotoUdon.Editor
         {
             VRCEmulator.Destroy();
         }
-
-        private readonly UpdaterEditor _updaterEditor = new UpdaterEditor();
     }
 }
+#endif
