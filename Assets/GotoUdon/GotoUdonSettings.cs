@@ -20,11 +20,13 @@ namespace GotoUdon
 
         private const string SIMULATOR_DEFINE = "GOTOUDON_SIMULATION";
 
+#if UNITY_EDITOR
         public bool IsSimulatorInstalled
         {
             get => UnityCompilerUtils.IsDefineEnabled(SIMULATOR_DEFINE);
             set => UnityCompilerUtils.SetDefineEnabled(SIMULATOR_DEFINE, value);
         }
+#endif
 
         public void Init()
         {
@@ -32,11 +34,6 @@ namespace GotoUdon
             if (playerTemplates == null)
             {
                 playerTemplates = new List<PlayerTemplate>();
-            }
-
-            if (playerTemplates.Count == 0)
-            {
-                playerTemplates.Add(PlayerTemplate.CreateNewPlayer(true));
             }
 
             playerTemplates.RemoveAll(obj => obj == null);

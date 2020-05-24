@@ -5,6 +5,7 @@ namespace GotoUdon.Utils
 {
     public class UnityCompilerUtils
     {
+#if UNITY_EDITOR
         public static bool IsDefineEnabled(string define)
         {
             string definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
@@ -30,5 +31,6 @@ namespace GotoUdon.Utils
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup,
                 string.Join(";", allDefines.ToArray()));
         }
+#endif
     }
 }

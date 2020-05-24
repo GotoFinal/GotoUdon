@@ -179,8 +179,9 @@ namespace GotoUdon.VRC
         {
             if (!Application.isPlaying)
             {
-                throw new ApplicationException(
-                    "Something is trying to launch GotoUdon not in play mode, this would cause objects to be permanently added to the scene.");
+                GotoLog.Warn(
+                    "Something is trying to launch GotoUdon not in play mode, this would cause objects to be permanently added to the scene. Skipping emulator...");
+                return null;
             }
 
             VRCEmulator emulator = new VRCEmulator();
@@ -244,9 +245,9 @@ namespace GotoUdon.VRC
                 GotoLog.Log($"[Networking] RPCtoPlayer, dest: {destination}, obj: {obj}, name: {name}, args: {string.Join(", ", arg)}");
             };
             Networking._Message = (type, o, arg3) => { };
-            Networking._IsNetworkSettled = () => Instance.isNetworkSettled;
-            Networking._IsMaster = () => Instance.localPlayer == Instance.master;
-            Networking._LocalPlayer = () => Instance.localPlayer;
+            Networking._IsNetworkSettled = () => Instance?.isNetworkSettled ?? true;
+            Networking._IsMaster = () => Instance?.localPlayer == Instance?.master;
+            Networking._LocalPlayer = () => Instance?.localPlayer;
             Networking._IsOwner = (player, obj) => !GotoUdonSettings.Instance.enableSimulation || player.IsOwner(obj);
             Networking._SetOwner = (player, obj) =>
             {

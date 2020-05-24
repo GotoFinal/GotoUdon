@@ -543,7 +543,7 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   scriptingDefineSymbols:
-    1: UDON;VRC_SDK_VRCSDK3;GOTOUDON_DEV
+    1: UDON;VRC_SDK_VRCSDK3;GOTOUDON_DEV;GOTOUDON_SIMULATION
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

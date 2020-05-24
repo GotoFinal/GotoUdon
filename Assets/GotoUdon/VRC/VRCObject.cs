@@ -8,7 +8,7 @@ namespace GotoUdon.VRC
     {
         public bool isReady = true;
         public SimulatedVRCPlayer owner;
-        public VRCPlayer VRCPlayer => owner == null ? VRCEmulator.Instance.Master : owner.VRCPlayer;
+        public VRCPlayer VRCPlayer => owner == null ? VRCEmulator.Instance?.Master : owner.VRCPlayer;
 
         public static VRCObject AsVrcObject(GameObject gameObject)
         {

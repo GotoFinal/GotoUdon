@@ -7,7 +7,7 @@ namespace GotoUdon.VRC
     {
         private void Update()
         {
-            VRCEmulator.Instance.Update();
+            VRCEmulator.Instance?.Update();
         }
     }
 }

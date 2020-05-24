@@ -57,7 +57,7 @@ public class GotoUdonEditor : EditorWindow
 #if GOTOUDON_SIMULATION
     private EmulationController _controller = EmulationController.Instance;
 
-    private PlayerTemplate _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
+    private PlayerTemplate _currentlyEdited;
 
     private void DrawPlayersEditor()
     {
@@ -102,6 +102,7 @@ public class GotoUdonEditor : EditorWindow
 
     private void DrawAddPlayerBox()
     {
+        if (_currentlyEdited == null) _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
         PlayerTemplateEditor.DrawPlayerTemplate(_currentlyEdited);
         SimpleGUI.ActionButton("Add player", () =>
         {
@@ -123,6 +124,8 @@ public class GotoUdonEditor : EditorWindow
 
 #if GOTOUDON_SIMULATION
         List<PlayerTemplate> templates = GotoUdonSettings.Instance.playerTemplates;
+        if (templates.Count == 0)
+            templates.Add(PlayerTemplate.CreateNewPlayer(true));
 
         GUILayout.Label("Players to create at startup:");
         PlayerTemplate toRemove = null;
@@ -133,6 +136,8 @@ public class GotoUdonEditor : EditorWindow
         }
 
         templates.Remove(toRemove);
+        if (templates.Count == 0)
+            templates.Add(PlayerTemplate.CreateNewPlayer(true));
 
         SimpleGUI.ActionButton("Add another player",
             () => templates.Add(PlayerTemplate.CreateNewPlayer(templates.Count == 0)));
@@ -170,7 +175,7 @@ public class GotoUdonEditor : EditorWindow
             settings.avatarPrefab = SimpleGUI.ObjectField("Avatar prefab", settings.avatarPrefab, false);
             settings.spawnPoint = SimpleGUI.ObjectField("Spawn point", settings.spawnPoint, true);
         });
-        
+
         // nah, not really working
         // SimpleGUI.DrawFoldout(this, "Advanced settings", () =>
         // {
