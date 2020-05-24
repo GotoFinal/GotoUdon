@@ -48,11 +48,15 @@ namespace GotoUdon.Editor
 
         internal VRCEmulator Emulator => VRCEmulator.Instance;
 
-        internal List<SimulatedVRCPlayer> RuntimePlayers => VRCEmulator.Instance.AllPlayers;
+        internal List<SimulatedVRCPlayer> RuntimePlayers => VRCEmulator.Instance?.AllPlayers ?? new List<SimulatedVRCPlayer>();
 
         private void OnPlay()
         {
-            VRCEmulator.InitEmulator(GotoUdonInternalState.Instance, GotoUdonSettings.Instance);
+            if (VRCEmulator.InitEmulator(GotoUdonInternalState.Instance, GotoUdonSettings.Instance) == null)
+            {
+                return;
+            }
+
             Emulator.OnPlayStart();
         }
 
