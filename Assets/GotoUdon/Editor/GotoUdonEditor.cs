@@ -57,7 +57,7 @@ public class GotoUdonEditor : EditorWindow
 #if GOTOUDON_SIMULATION
     private EmulationController _controller = EmulationController.Instance;
 
-    private PlayerTemplate _currentlyEdited;
+    private PlayerTemplate _currentlyEdited = null;
 
     private void DrawPlayersEditor()
     {
@@ -102,7 +102,8 @@ public class GotoUdonEditor : EditorWindow
 
     private void DrawAddPlayerBox()
     {
-        if (_currentlyEdited == null) _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
+        if (_currentlyEdited == null || (_currentlyEdited.playerName == "" && _currentlyEdited.customId == 0))
+            _currentlyEdited = PlayerTemplate.CreateNewPlayer(true);
         PlayerTemplateEditor.DrawPlayerTemplate(_currentlyEdited);
         SimpleGUI.ActionButton("Add player", () =>
         {
