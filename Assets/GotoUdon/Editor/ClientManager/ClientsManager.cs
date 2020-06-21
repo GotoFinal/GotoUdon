@@ -25,16 +25,6 @@ namespace GotoUdon.Editor.ClientManager
             set => GotoUdonInternalState.Instance.instanceId = value;
         }
 
-        public void Init()
-        {
-            GotoUdonInternalState internalState = GotoUdonInternalState.Instance;
-            Dictionary<int, GotoUdonInternalState.ClientProcess> processesByProfile = internalState.GetProcessesByProfile();
-            foreach (ClientSettings clientSettings in _settings.clients)
-            {
-                if (!processesByProfile.ContainsKey(clientSettings.profile)) continue;
-            }
-        }
-
         public bool IsAnyClientRunning()
         {
             foreach (GotoUdonInternalState.ClientProcess clientProcess in GotoUdonInternalState.Instance.processes)
@@ -45,18 +35,18 @@ namespace GotoUdon.Editor.ClientManager
             return false;
         }
 
-        public void StartClients(bool restart, bool keepInstance)
+        public void StartClients(bool restart, bool keepInstance, bool localTesting, bool forceDontValidate)
         {
             if (restart)
             {
                 KillAllClients();
             }
 
-            string instanceId = GetOrGenerateInstanceId(keepInstance, _settings);
+            string instanceId = GetOrGenerateInstanceId(forceDontValidate, keepInstance, localTesting, _settings);
             foreach (ClientSettings clientSettings in _settings.clients)
             {
                 if (!clientSettings.enabled) continue;
-                StartClient(restart, keepInstance, clientSettings, true, instanceId);
+                StartClients(restart, keepInstance, forceDontValidate, localTesting, clientSettings, true, instanceId);
             }
 
             EditorUtility.SetDirty(GotoUdonInternalState.Instance);
@@ -64,43 +54,54 @@ namespace GotoUdon.Editor.ClientManager
 
         private void KillAllClients()
         {
-            Dictionary<int, GotoUdonInternalState.ClientProcess>
+            Dictionary<int, List<GotoUdonInternalState.ClientProcess>>
                 processesByProfile = GotoUdonInternalState.Instance.GetProcessesByProfile();
             foreach (ClientSettings clientSettings in _settings.clients)
             {
                 if (!clientSettings.enabled || !processesByProfile.ContainsKey(clientSettings.profile)) continue;
-                processesByProfile[clientSettings.profile].StopProcess();
+                processesByProfile[clientSettings.profile].ForEach(p => p.StopProcess());
             }
         }
 
-        public void StartClient(bool restart, bool keepInstance, ClientSettings clientSettings, bool save = true, string instance = null)
+        public void StartClients(
+            bool restart,
+            bool keepInstance,
+            bool keepInstanceForce,
+            bool localTesting,
+            ClientSettings clientSettings,
+            bool save = true,
+            string instance = null)
         {
             GotoUdonInternalState internalState = GotoUdonInternalState.Instance;
             string vrcInstallPath = _settings.gamePath;
             if (instance == null)
-                instance = GetOrGenerateInstanceId(keepInstance, _settings);
-            string sharedArgs = _settings.launchOptions;
-            Dictionary<int, GotoUdonInternalState.ClientProcess>
+                instance = GetOrGenerateInstanceId(keepInstanceForce, keepInstance, localTesting, _settings);
+            string sharedArgs = localTesting ? _settings.localLaunchOptions : _settings.launchOptions;
+            Dictionary<int, List<GotoUdonInternalState.ClientProcess>>
                 processesByProfile = internalState.GetProcessesByProfile();
 
             int profile = clientSettings.profile;
             if (processesByProfile.ContainsKey(profile))
             {
-                Process process = processesByProfile[profile].Process;
+                List<GotoUdonInternalState.ClientProcess> processes = processesByProfile[profile];
                 if (restart)
                 {
-                    if (process != null)
+                    foreach (GotoUdonInternalState.ClientProcess process in processes)
                     {
-                        processesByProfile[profile].StopProcess();
+                        if (process.Process != null) process.StopProcess();
                     }
                 }
-                else if (process != null) return;
+                else if (!localTesting && processes.Count > 0) return;
             }
 
-            SpawnClient(clientSettings, instance, sharedArgs, vrcInstallPath, keepInstance ? 10000 : 0, processesByProfile,
+            SpawnClient(clientSettings, localTesting, instance, sharedArgs, vrcInstallPath,
+                keepInstance ? _settings.sameInstanceRestartDelay * 100 : 0,
+                processesByProfile,
                 (map, spawnedProcess) =>
                 {
-                    GotoUdonInternalState.Instance.processes.RemoveAll(client => client.profile == profile);
+                    if (restart)
+                        GotoUdonInternalState.Instance.processes.RemoveAll(client => client.profile == profile);
+                    GotoUdonInternalState.Instance.processes.RemoveAll(client => client.Process?.HasExited == true);
                     GotoUdonInternalState.Instance.processes.Add(new GotoUdonInternalState.ClientProcess
                     {
                         pid = spawnedProcess.Id,
@@ -114,71 +115,89 @@ namespace GotoUdon.Editor.ClientManager
                 });
         }
 
-        private void SpawnClient(ClientSettings settings, string instance, string args, string vrcInstallPath, int delayMs,
-            Dictionary<int, GotoUdonInternalState.ClientProcess> processMap,
-            Action<Dictionary<int, GotoUdonInternalState.ClientProcess>, Process> callback)
+        private void SpawnClient(ClientSettings settings, bool local, string instance, string args, string vrcInstallPath, int delayMs,
+            Dictionary<int, List<GotoUdonInternalState.ClientProcess>> processMap,
+            Action<Dictionary<int, List<GotoUdonInternalState.ClientProcess>>, Process> callback)
         {
+            List<Action> startVrcActions = new List<Action>();
             args = args.Replace("{profile}", settings.profile.ToString());
             args = args.Replace("{instance}", instance);
+            args = args.Replace("{file}", EditorPrefs.GetString("currentBuildingAssetBundlePath"));
             args = args.Replace("{vr}", settings.vr ? "" : "--no-vr");
-            GotoLog.Log($"Starting VRC with arguments: {args}");
-            Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(vrcInstallPath, args);
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            SynchronizationContext synchronizationContext = SynchronizationContext.Current;
-            process.OutputDataReceived += (sender, eventArgs) =>
+            int num = local ? settings.duplicates : 1;
+            GotoLog.Log($"Starting ${num} instances of VRC with arguments: {args}");
+            for (var i = 0; i < num; i++)
             {
-                SynchronizationContext.SetSynchronizationContext(synchronizationContext);
-                if (string.IsNullOrWhiteSpace(eventArgs?.Data)) return;
-                if (!eventArgs.Data.StartsWith("Using log prefix ")) return;
-                GotoUdonInternalState.ClientProcess clientProcess =
-                    GotoUdonInternalState.Instance.GetProcessesByProfile()[settings.profile];
-                clientProcess.logFilePrefix = eventArgs.Data.Replace("Using log prefix ", "");
-                clientProcess.lastReadPosition = 0;
-                SynchronizationContext.Current.Post(state => EditorUtility.SetDirty((Object) state), GotoUdonInternalState.Instance);
-            };
-            Action startVrcAction = () =>
-            {
-                process.Start();
-                process.BeginOutputReadLine();
-                synchronizationContext.Post(_ => callback(processMap, process), process);
-            };
+                Process process = new Process();
+                process.StartInfo = new ProcessStartInfo(vrcInstallPath, args);
+                process.StartInfo.UseShellExecute = false;
+                // process.StartInfo.RedirectStandardOutput = true;
+                SynchronizationContext synchronizationContext = SynchronizationContext.Current;
+                startVrcActions.Add(() =>
+                {
+                    process.Start();
+                    // process.BeginOutputReadLine();
+                    synchronizationContext.Post(_ => callback(processMap, process), process);
+                });
+            }
+
             if (delayMs != 0)
             {
                 new Thread(() =>
                 {
                     // VrChat need some time to register that we are no longer in this same instance
                     Thread.Sleep(delayMs);
-                    startVrcAction();
+                    startVrcActions.ForEach(a => a.Invoke());
                 }).Start();
             }
-            else startVrcAction();
+            else startVrcActions.ForEach(a => a.Invoke());
         }
 
-        private string GetOrGenerateInstanceId(bool keepInstance, ClientManagerSettings settings)
+        private string GetOrGenerateInstanceId(bool forceDontValidate, bool keepInstance, bool localTesting, ClientManagerSettings settings)
         {
+            String localTestingAsset = localTesting ? EditorPrefs.GetString("currentBuildingAssetBundlePath") : null;
+            if (forceDontValidate)
+            {
+                return InstanceId ?? (InstanceId = CreateNewInstanceId(settings, localTestingAsset));
+            }
+
             GotoUdonInternalState internalState = GotoUdonInternalState.Instance;
             if (string.IsNullOrWhiteSpace(InstanceId) || !keepInstance || settings.accessType.ToString() != internalState.accessType)
             {
                 internalState.accessType = settings.accessType.ToString();
-                return InstanceId = CreateNewInstanceId(settings);
+                return InstanceId = CreateNewInstanceId(settings, localTestingAsset);
             }
 
             if (InstanceId.Split(':')[0] != settings.WorldId)
             {
                 internalState.accessType = settings.accessType.ToString();
-                return InstanceId = CreateNewInstanceId(settings);
+                return InstanceId = CreateNewInstanceId(settings, localTestingAsset);
+            }
+
+            if (localTesting && !InstanceId.Contains(localTestingAsset))
+            {
+                return InstanceId = CreateNewInstanceId(settings, localTestingAsset);
+            }
+
+            if (!localTesting && InstanceId.Contains(EditorPrefs.GetString("currentBuildingAssetBundlePath")))
+            {
+                return InstanceId = CreateNewInstanceId(settings, null);
             }
 
             return InstanceId;
         }
 
-        private string CreateNewInstanceId(ClientManagerSettings settings)
+        private string CreateNewInstanceId(ClientManagerSettings settings, String localTestingAsset)
         {
             int instanceIndex = Random.Range(1, 99999);
             string accessTags = ApiWorldInstance.BuildAccessTags(settings.accessType, settings.userId);
-            return settings.WorldId + ":" + instanceIndex + accessTags;
+            string id = settings.WorldId + ":" + instanceIndex + accessTags;
+            if (localTestingAsset != null)
+            {
+                id += "&hidden=true&name=BuildAndRun&url=file:///" + localTestingAsset;
+            }
+
+            return id;
         }
     }
 }

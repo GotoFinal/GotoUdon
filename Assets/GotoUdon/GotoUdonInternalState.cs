@@ -18,25 +18,34 @@ namespace GotoUdon
         public string instanceId;
         public string accessType;
 
-        public Dictionary<int, ClientProcess> GetProcessesByProfile()
+        public Dictionary<int, List<ClientProcess>> GetProcessesByProfile()
         {
-            Dictionary<int, ClientProcess> profileToProcessMapping = new Dictionary<int, ClientProcess>();
+            Dictionary<int, List<ClientProcess>> profileToProcessMapping = new Dictionary<int, List<ClientProcess>>();
             foreach (var clientProcess in processes)
             {
-                profileToProcessMapping[clientProcess.profile] = clientProcess;
+                if (!profileToProcessMapping.ContainsKey(clientProcess.profile))
+                {
+                    profileToProcessMapping[clientProcess.profile] = new List<ClientProcess>();
+                }
+
+                if (clientProcess.Process != null && !clientProcess.Process.HasExited)
+                {
+                    profileToProcessMapping[clientProcess.profile].Add(clientProcess);
+                }
             }
 
             return profileToProcessMapping;
         }
 
-        public ClientProcess GetProcessByProfile(int profile)
+        public List<ClientProcess> GetProcessesByProfile(int profile)
         {
-            foreach (var clientProcess in processes)
+            Dictionary<int, List<ClientProcess>> processesByProfile = GetProcessesByProfile();
+            if (!processesByProfile.ContainsKey(profile))
             {
-                if (clientProcess.profile == profile) return clientProcess;
+                return new List<ClientProcess>();
             }
 
-            return null;
+            return processesByProfile[profile];
         }
 
         public void Init()
@@ -71,11 +80,6 @@ namespace GotoUdon
             public int pid;
 
             public int profile;
-
-            // public string userId;
-            public string logFilePrefix;
-
-            public long lastReadPosition;
 
             public Process Process
             {

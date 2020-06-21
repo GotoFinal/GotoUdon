@@ -63,6 +63,7 @@ namespace GotoUdon.Editor.ClientManager
                     "This should be automatically filled from sdk, but if its not, point it to your vrchat.exe");
                 _settings.gamePath = EditorGUILayout.TextField("Game path", _settings.gamePath);
                 _settings.launchOptions = EditorGUILayout.TextField("Launch options", _settings.launchOptions);
+                _settings.localLaunchOptions = EditorGUILayout.TextField("Local launch options", _settings.localLaunchOptions);
                 // _settings.sendInvitesOnUpdate = EditorGUILayout.Toggle("Send invites on world update", _settings.sendInvitesOnUpdate);
                 _settings.accessType = (ApiWorldInstance.AccessType) EditorGUILayout.EnumPopup("Access Type", _settings.accessType);
 
@@ -87,6 +88,8 @@ namespace GotoUdon.Editor.ClientManager
         }
 
         private bool _keepInstance = false;
+        private bool _keepInstanceForce = false;
+        private bool _localTesting = true;
 
         private void DrawClientSection()
         {
@@ -110,28 +113,50 @@ namespace GotoUdon.Editor.ClientManager
             }
 
             _keepInstance = EditorGUILayout.Toggle("Keep current instance ID", _keepInstance);
+            _keepInstanceForce = EditorGUILayout.Toggle("Force keep instance ID", _keepInstanceForce);
+            if (_keepInstanceForce) _keepInstance = true;
+            _localTesting = EditorGUILayout.Toggle("Use local testing", _localTesting);
             _clientsManager.InstanceId = EditorGUILayout.TextField(_clientsManager.InstanceId);
 
             GUILayout.BeginHorizontal();
-            SimpleGUI.ActionButton("Start", () => _clientsManager.StartClients(false, _keepInstance));
+            SimpleGUI.ActionButton("Start", () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce));
             if (_clientsManager.IsAnyClientRunning())
-                SimpleGUI.ActionButton("Restart", () => _clientsManager.StartClients(true, _keepInstance));
+                SimpleGUI.ActionButton("Restart", () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce));
             GUILayout.EndHorizontal();
 
             if (!Application.isPlaying)
             {
-                if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null, "Can't find user for auto publish, please log in SDK."))
+                if (_localTesting)
                 {
-                    return;
+                    SimpleGUI.ActionButton("Local testing & Start", BuildAndTest);
                 }
+                else
+                {
+                    if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null, "Can't find user for auto publish, please log in SDK."))
+                    {
+                        return;
+                    }
 
-                SimpleGUI.ActionButton("Build & Auto Publish & Start", PublishAndTest);
+                    SimpleGUI.ActionButton("Build & Auto Publish & Start", PublishAndTest);
+                }
             }
         }
 
         private void PublishAndTest()
         {
             StartPublishing();
+        }
+
+        private void BuildAndTest()
+        {
+            EnvConfig.ConfigurePlayerSettings();
+            VRC_SdkBuilder.shouldBuildUnityPackage = false;
+            AssetExporter.CleanupUnityPackageExport(); // force unity package rebuild on next publish
+            VRC_SdkBuilder.numClientsToLaunch = 0;
+            VRC_SdkBuilder.forceNoVR = true;
+            VRC_SdkBuilder.PreBuildBehaviourPackaging();
+            VRC_SdkBuilder.ExportSceneResourceAndRun();
+            StartClients();
         }
 
         private void StartPublishing()
@@ -145,7 +170,7 @@ namespace GotoUdon.Editor.ClientManager
 
         public void StartClients()
         {
-            _clientsManager.StartClients(false, _keepInstance);
+            _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce);
         }
 
         private void DrawClientSettingsList(List<ClientSettings> allClients)
@@ -181,6 +206,7 @@ namespace GotoUdon.Editor.ClientManager
                 {
                     name = "",
                     profile = maxProfile + 1,
+                    duplicates = 1,
                     enabled = true
                 });
             });
@@ -196,6 +222,8 @@ namespace GotoUdon.Editor.ClientManager
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Profile", GUILayout.Width(45));
             settings.profile = EditorGUILayout.IntField(settings.profile, GUILayout.Width(20));
+            GUILayout.Label("Num of clients", GUILayout.Width(45));
+            settings.duplicates = EditorGUILayout.IntField(settings.duplicates, GUILayout.Width(20));
             GUILayout.Label("Enabled", GUILayout.Width(55));
             settings.enabled = EditorGUILayout.Toggle(settings.enabled, GUILayout.Width(15));
             EditorGUILayout.EndHorizontal();
@@ -205,18 +233,29 @@ namespace GotoUdon.Editor.ClientManager
             GUILayout.Label("VR", GUILayout.Width(20));
             settings.vr = EditorGUILayout.Toggle(settings.vr, GUILayout.Width(15));
 
-            GotoUdonInternalState.ClientProcess clientProcess = GotoUdonInternalState.Instance.GetProcessByProfile(settings.profile);
-            if (clientProcess?.Process != null)
+            List<GotoUdonInternalState.ClientProcess> clientProcess = GotoUdonInternalState.Instance.GetProcessesByProfile(settings.profile);
+            if (clientProcess.Count > 0)
             {
-                SimpleGUI.ActionButton("Stop", () => clientProcess.StopProcess(), GUILayout.Width(45));
-                SimpleGUI.ActionButton("Restart", () => _clientsManager.StartClient(true, _keepInstance, settings), GUILayout.Width(70));
-                SimpleGUI.ActionButton("Keep room", () => _clientsManager.StartClient(true, true, settings),
-                    GUILayout.Width(80));
+                string all = clientProcess.Count > 1 ? " All " + clientProcess.Count : "";
+                SimpleGUI.ActionButton("Stop" + all, () => clientProcess.ForEach(p => p.StopProcess()), GUILayout.Width(65));
+                SimpleGUI.ActionButton("Restart" + all, () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce, settings),
+                    GUILayout.Width(90));
+                SimpleGUI.ActionButton("Keep room" + all, () => _clientsManager.StartClients(true, true, _localTesting, _keepInstanceForce, settings),
+                    GUILayout.Width(100));
             }
-            else
+            if (_localTesting || clientProcess.Count == 0)
             {
-                SimpleGUI.ActionButton("Start", () => _clientsManager.StartClient(false, _keepInstance, settings), GUILayout.Width(60));
-                SimpleGUI.ActionButton("Start [keep room]", () => _clientsManager.StartClient(false, true, settings), GUILayout.Width(120));
+                if (_localTesting)
+                {
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
+                }
+                SimpleGUI.ActionButton("Start One",
+                    () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce, settings.withDuplicates(1)),
+                    GUILayout.Width(80));
+                SimpleGUI.ActionButton("Start One [keep room]",
+                    () => _clientsManager.StartClients(false, true, _localTesting, _keepInstanceForce, settings.withDuplicates(1)),
+                    GUILayout.Width(140));
             }
 
             bool actionButton = GUILayout.Button(buttonAction, GUILayout.Width(70));
@@ -240,7 +279,6 @@ namespace GotoUdon.Editor.ClientManager
 
             _settings.Init();
             _clientsManager = new ClientsManager(_settings);
-            _clientsManager.Init();
         }
     }
 }
