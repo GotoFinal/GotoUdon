@@ -154,14 +154,18 @@ public class GotoUdonEditor : EditorWindow
     private void DrawGlobalOptions(GotoUdonSettings settings)
     {
         settings.Init();
-        if (!settings.IsSimulatorInstalled)
-        {
-            SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
-        }
-        else
-        {
-            SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
-        }
+
+        SimpleGUI.WarningBox(true,
+            "Sorry, currently simulator is not available. Please use client manager with new local testing functionality.\n" +
+            "Emulation will be restored in 1.4.0");
+        // if (!settings.IsSimulatorInstalled)
+        // {
+        //     SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
+        // }
+        // else
+        // {
+        //     SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
+        // }
 
 #if GOTOUDON_SIMULATION_TEMP_DISABLED
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
