@@ -15,6 +15,7 @@ namespace GotoUdon.Editor.ClientManager
         public string gamePath;
 
         public string launchOptions;
+        public string localLaunchOptions;
 
         // public bool sendInvitesOnUpdate = true;
         public ApiWorldInstance.AccessType accessType = ApiWorldInstance.AccessType.InviteOnly;
@@ -98,6 +99,7 @@ namespace GotoUdon.Editor.ClientManager
                 {
                     name = "Default profile",
                     profile = 0,
+                    duplicates = 1,
                     enabled = true,
                     vr = true
                 });
@@ -107,6 +109,12 @@ namespace GotoUdon.Editor.ClientManager
             {
                 launchOptions =
                     "--enable-debug-gui --enable-sdk-log-levels --enable-udon-debug-logging --profile={profile} \"--url=launch?id={instance}\" {vr}";
+            }
+
+            if (string.IsNullOrWhiteSpace(localLaunchOptions))
+            {
+                localLaunchOptions =
+                    "--enable-debug-gui --enable-sdk-log-levels --enable-udon-debug-logging --profile={profile} \"--url=create?roomId={instance}\" {vr}";
             }
         }
     }
