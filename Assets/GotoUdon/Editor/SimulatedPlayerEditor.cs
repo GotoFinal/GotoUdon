@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_TEMP_DISABLED
 using System.Collections.Generic;
 using GotoUdon.Utils.Editor;
 using GotoUdon.VRC;

@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_TEMP_DISABLED
 using UnityEngine;
 
 namespace GotoUdon.VRC

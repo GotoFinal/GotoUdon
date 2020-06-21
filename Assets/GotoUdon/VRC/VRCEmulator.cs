@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_TEMP_DISABLED
 using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
@@ -95,7 +95,7 @@ namespace GotoUdon.VRC
             {
                 foreach (SimulatedVRCPlayer player in _delayedPlayers)
                 {
-                    ForAllUdon(behaviour => behaviour.OnPlayerJoined(player.VRCPlayer));
+                    ForAllUdon(behaviour => behaviour.RunEvent(player.VRCPlayer));
                 }
 
                 _delayedPlayers.Clear();
