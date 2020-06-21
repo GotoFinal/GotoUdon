@@ -38,7 +38,7 @@ public class GotoUdonEditor : EditorWindow
         UpdaterEditor.Instance.DrawVersionInformation();
 
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_TEMP_DISABLED
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
 #endif
 
@@ -54,7 +54,7 @@ public class GotoUdonEditor : EditorWindow
         GUILayout.EndScrollView();
     }
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_TEMP_DISABLED
     private EmulationController _controller = EmulationController.Instance;
 
     private PlayerTemplate _currentlyEdited = null;
@@ -123,7 +123,7 @@ public class GotoUdonEditor : EditorWindow
         DrawGlobalOptions(GotoUdonSettings.Instance);
         SimpleGUI.SectionSpacing();
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_TEMP_DISABLED
         List<PlayerTemplate> templates = GotoUdonSettings.Instance.playerTemplates;
         if (templates.Count == 0)
             templates.Add(PlayerTemplate.CreateNewPlayer(true));
@@ -163,7 +163,7 @@ public class GotoUdonEditor : EditorWindow
             SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
         }
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_TEMP_DISABLED
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
             "You need to select some avatar prefab to use this resource. You can find ybot-mini in Assets folder with this resource.");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
