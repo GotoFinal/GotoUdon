@@ -13,7 +13,7 @@ using UnityEngine;
 public class GotoUdonEditor : EditorWindow
 {
     public const string VERSION = "v1.2.0";
-    public const string ImplementedSDKVersion = "2020.05.06.12.14";
+    public const string ImplementedSDKVersion = "2020.06.16.20.53";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
     [MenuItem("Window/GotoUdon/Debugger Tools")]

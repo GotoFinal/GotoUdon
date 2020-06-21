@@ -78,7 +78,7 @@ namespace GotoUdon.Editor
                 string newestSdkVersion = NormalizeVrChatSDKVersion(releaseInfo.Version);
                 string currentSdkVersion = NormalizeVrChatSDKVersion(GotoUdonEditor.CurrentSDKVersion);
 
-                // I give up
+                // I give up, TODO: save version in own repository instead of using vrchat
                 if (currentSdkVersion.EndsWith("05.06") && newestSdkVersion.EndsWith("05.12")) return;
 
                 if (releaseInfo.UnityPackage != null &&

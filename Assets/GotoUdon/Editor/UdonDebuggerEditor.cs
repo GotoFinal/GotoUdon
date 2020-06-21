@@ -27,7 +27,6 @@ namespace GotoUdon.Editor
 
             GUILayout.BeginHorizontal();
             ActionButton("OnDestroy", behaviour => behaviour.OnDestroy());
-            ActionButton("OnSpawn", behaviour => behaviour.OnSpawn());
             ActionButton("OnDrop", behaviour => behaviour.OnDrop());
             GUILayout.EndHorizontal();
 
