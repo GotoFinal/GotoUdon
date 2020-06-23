@@ -7,6 +7,7 @@ using UnityEditor;
 using VRC.Core;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
+using Tools = VRC.Tools;
 
 namespace GotoUdon.Editor.ClientManager
 {
@@ -168,10 +169,10 @@ namespace GotoUdon.Editor.ClientManager
                 return InstanceId = CreateNewInstanceId(settings, localTestingAsset);
             }
 
-            if (InstanceId.Split(':')[0] != settings.WorldId)
+            if (!localTesting && InstanceId.Split(':')[0] != settings.WorldId)
             {
                 internalState.accessType = settings.accessType.ToString();
-                return InstanceId = CreateNewInstanceId(settings, localTestingAsset);
+                return InstanceId = CreateNewInstanceId(settings, null);
             }
 
             if (localTesting && !InstanceId.Contains(localTestingAsset))
@@ -189,13 +190,13 @@ namespace GotoUdon.Editor.ClientManager
 
         private string CreateNewInstanceId(ClientManagerSettings settings, String localTestingAsset)
         {
+            if (localTestingAsset != null)
+            {
+                return Tools.GetRandomDigits(10) + "&hidden=true&name=BuildAndRun_GotoUdon&url=file:///" + localTestingAsset;
+            }
             int instanceIndex = Random.Range(1, 99999);
             string accessTags = ApiWorldInstance.BuildAccessTags(settings.accessType, settings.userId);
             string id = settings.WorldId + ":" + instanceIndex + accessTags;
-            if (localTestingAsset != null)
-            {
-                id += "&hidden=true&name=BuildAndRun&url=file:///" + localTestingAsset;
-            }
 
             return id;
         }

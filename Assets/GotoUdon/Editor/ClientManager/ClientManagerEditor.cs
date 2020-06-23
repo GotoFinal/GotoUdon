@@ -66,6 +66,8 @@ namespace GotoUdon.Editor.ClientManager
                 _settings.localLaunchOptions = EditorGUILayout.TextField("Local launch options", _settings.localLaunchOptions);
                 // _settings.sendInvitesOnUpdate = EditorGUILayout.Toggle("Send invites on world update", _settings.sendInvitesOnUpdate);
                 _settings.accessType = (ApiWorldInstance.AccessType) EditorGUILayout.EnumPopup("Access Type", _settings.accessType);
+                _keepInstanceForce = EditorGUILayout.Toggle("Force keep instance ID", _keepInstanceForce);
+                if (_keepInstanceForce) _keepInstance = true;
 
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Same room restart wait time (s)", GUILayout.Width(200));
@@ -112,23 +114,28 @@ namespace GotoUdon.Editor.ClientManager
                 return;
             }
 
-            _keepInstance = EditorGUILayout.Toggle("Keep current instance ID", _keepInstance);
-            _keepInstanceForce = EditorGUILayout.Toggle("Force keep instance ID", _keepInstanceForce);
-            if (_keepInstanceForce) _keepInstance = true;
+            if (!_localTesting)
+            {
+                _keepInstance = EditorGUILayout.Toggle("Keep current instance ID", _keepInstance);
+            }
+
             _localTesting = EditorGUILayout.Toggle("Use local testing", _localTesting);
             _clientsManager.InstanceId = EditorGUILayout.TextField(_clientsManager.InstanceId);
 
             GUILayout.BeginHorizontal();
-            SimpleGUI.ActionButton("Start", () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce));
+            string startButtonText = _localTesting ? "Start last version (no build)" : "Start";
+            SimpleGUI.ActionButton(startButtonText,
+                () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce));
             if (_clientsManager.IsAnyClientRunning())
-                SimpleGUI.ActionButton("Restart", () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce));
+                SimpleGUI.ActionButton("Restart",
+                    () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce));
             GUILayout.EndHorizontal();
 
             if (!Application.isPlaying)
             {
                 if (_localTesting)
                 {
-                    SimpleGUI.ActionButton("Local testing & Start", BuildAndTest);
+                    SimpleGUI.ActionButton("Build & Start", BuildAndTest);
                 }
                 else
                 {
@@ -222,8 +229,12 @@ namespace GotoUdon.Editor.ClientManager
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Profile", GUILayout.Width(45));
             settings.profile = EditorGUILayout.IntField(settings.profile, GUILayout.Width(20));
-            GUILayout.Label("Num of clients", GUILayout.Width(45));
-            settings.duplicates = EditorGUILayout.IntField(settings.duplicates, GUILayout.Width(20));
+            if (_localTesting)
+            {
+                GUILayout.Label("Num of", GUILayout.Width(45));
+                settings.duplicates = EditorGUILayout.IntField(settings.duplicates, GUILayout.Width(20));
+            }
+
             GUILayout.Label("Enabled", GUILayout.Width(55));
             settings.enabled = EditorGUILayout.Toggle(settings.enabled, GUILayout.Width(15));
             EditorGUILayout.EndHorizontal();
@@ -233,29 +244,30 @@ namespace GotoUdon.Editor.ClientManager
             GUILayout.Label("VR", GUILayout.Width(20));
             settings.vr = EditorGUILayout.Toggle(settings.vr, GUILayout.Width(15));
 
-            List<GotoUdonInternalState.ClientProcess> clientProcess = GotoUdonInternalState.Instance.GetProcessesByProfile(settings.profile);
+            List<GotoUdonInternalState.ClientProcess>
+                clientProcess = GotoUdonInternalState.Instance.GetProcessesByProfile(settings.profile);
             if (clientProcess.Count > 0)
             {
                 string all = clientProcess.Count > 1 ? " All " + clientProcess.Count : "";
                 SimpleGUI.ActionButton("Stop" + all, () => clientProcess.ForEach(p => p.StopProcess()), GUILayout.Width(65));
-                SimpleGUI.ActionButton("Restart" + all, () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce, settings),
+                SimpleGUI.ActionButton("Restart" + all,
+                    () => _clientsManager.StartClients(true, _keepInstance, _keepInstanceForce, _localTesting, settings),
                     GUILayout.Width(90));
-                SimpleGUI.ActionButton("Keep room" + all, () => _clientsManager.StartClients(true, true, _localTesting, _keepInstanceForce, settings),
-                    GUILayout.Width(100));
+                if (!_localTesting)
+                    SimpleGUI.ActionButton("Keep room" + all,
+                        () => _clientsManager.StartClients(true, true, _keepInstanceForce, _localTesting, settings),
+                        GUILayout.Width(100));
             }
+
             if (_localTesting || clientProcess.Count == 0)
             {
-                if (_localTesting)
-                {
-                    EditorGUILayout.EndHorizontal();
-                    EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-                }
                 SimpleGUI.ActionButton("Start One",
-                    () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce, settings.withDuplicates(1)),
+                    () => _clientsManager.StartClients(false, _keepInstance, _keepInstanceForce, _localTesting, settings.withDuplicates(1)),
                     GUILayout.Width(80));
-                SimpleGUI.ActionButton("Start One [keep room]",
-                    () => _clientsManager.StartClients(false, true, _localTesting, _keepInstanceForce, settings.withDuplicates(1)),
-                    GUILayout.Width(140));
+                if (!_localTesting)
+                    SimpleGUI.ActionButton("Start One [keep room]",
+                        () => _clientsManager.StartClients(false, true, _keepInstanceForce, _localTesting, settings.withDuplicates(1)),
+                        GUILayout.Width(140));
             }
 
             bool actionButton = GUILayout.Button(buttonAction, GUILayout.Width(70));
