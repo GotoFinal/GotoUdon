@@ -99,7 +99,7 @@ namespace GotoUdon.Editor.ClientManager
                 {
                     name = "Default profile",
                     profile = 0,
-                    duplicates = 1,
+                    instances = 1,
                     enabled = true,
                     vr = true
                 });

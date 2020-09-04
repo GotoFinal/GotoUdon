@@ -10,31 +10,30 @@ namespace GotoUdon.Editor.VersionChecker
     {
         public static void GetNewestSdkVersion(Action<ReleaseResponse> callback)
         {
-            string url = "https://www.vrchat.com/download/sdk3";
+            string url = "https://raw.githubusercontent.com/GotoFinal/GotoUdon/master/Assets/GotoUdon/Settings/VRCSDKVersion";
+
             UnityWebRequest www = UnityWebRequest.Get(url);
             try
             {
-                www.redirectLimit = 0;
                 UnityWebRequestAsyncOperation action = www.SendWebRequest();
+                DownloadHandler downloadHandler = www.downloadHandler;
                 action.completed += operation =>
                 {
-                    UnityWebRequest request = action.webRequest;
-                    var responseCode = request.responseCode;
-                    if (responseCode != 302)
-                    {
-                        callback(new ReleaseResponse
-                        {
-                            Error = $"Failed to check for new SDK version: {request.error}"
-                        });
-                        www.Dispose();
-                        return;
-                    }
-
                     try
                     {
-                        string packageUrl = request.GetResponseHeader("Location");
-                        string fileName = packageUrl.Substring(packageUrl.LastIndexOf('/') + 1);
-                        string version = fileName.Substring(fileName.LastIndexOf('-') + 1).Replace(".unitypackage", "");
+                        UnityWebRequest request = action.webRequest;
+                        var responseCode = request.responseCode;
+                        if (responseCode != 200)
+                        {
+                            callback(new ReleaseResponse
+                            {
+                                Error = $"Failed to check for new VrChat SDK version: {request.error}"
+                            });
+                            www.Dispose();
+                            return;
+                        }
+
+                        string version = downloadHandler.text;
                         string description = version == GotoUdonEditor.ImplementedSDKVersion
                             ? "This is recommended version of VRChat SDK for GotoUdon!"
                             : "This version might not be fully supported by GotoUdon. If there is new version of GotoUdon available first update SDK then GotoUdon for best compatibility.";
@@ -42,15 +41,15 @@ namespace GotoUdon.Editor.VersionChecker
                         {
                             ReleaseInfo = new ReleaseInfo
                             {
-                                Name = fileName.Replace(".unitypackage", ""),
+                                Name = $"VRCSDK3-WORLD-{version}_Public",
                                 Version = version,
                                 Description = description,
                                 Assets = new List<ReleaseAsset>
                                 {
                                     new ReleaseAsset
                                     {
-                                        Name = fileName,
-                                        DownloadUrl = packageUrl
+                                        Name = $"VRCSDK3-WORLD-{version}_Public.unitypackage",
+                                        DownloadUrl = "https://vrchat.com/download/sdk3-worlds"
                                     }
                                 }
                             }
@@ -60,7 +59,7 @@ namespace GotoUdon.Editor.VersionChecker
                     {
                         ReleaseResponse response = new ReleaseResponse
                         {
-                            Error = "Failed to read response from VRChat API: " + exception.Message
+                            Error = "Failed to read response from GotoUdon GitHub sdk file: " + exception.Message
                         };
                         GotoLog.Exception(response.Error, exception);
                         callback(response);

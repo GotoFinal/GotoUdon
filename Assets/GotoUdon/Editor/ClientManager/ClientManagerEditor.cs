@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using VRC.Core;
 using VRC.SDK3.Editor;
+using VRC.SDKBase.Editor;
 using static GotoUdon.Editor.ReleaseHelper.ReleaseHelper;
 
 namespace GotoUdon.Editor.ClientManager
@@ -126,7 +127,7 @@ namespace GotoUdon.Editor.ClientManager
             string startButtonText = _localTesting ? "Start last version (no build)" : "Start";
             SimpleGUI.ActionButton(startButtonText,
                 () => _clientsManager.StartClients(false, _keepInstance, _localTesting, _keepInstanceForce));
-            if (_clientsManager.IsAnyClientRunning())
+            if (ClientProcessesManager.IsAnyRunning())
                 SimpleGUI.ActionButton("Restart",
                     () => _clientsManager.StartClients(true, _keepInstance, _localTesting, _keepInstanceForce));
             GUILayout.EndHorizontal();
@@ -139,7 +140,7 @@ namespace GotoUdon.Editor.ClientManager
                 }
                 else
                 {
-                    if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null, "Can't find user for auto publish, please log in SDK."))
+                    if (SimpleGUI.ErrorBox(APIUser.CurrentUser == null || !VRC_SdkBuilder.VerifyCredentials(), "Can't find user for auto publish, please log in SDK."))
                     {
                         return;
                     }
@@ -159,10 +160,10 @@ namespace GotoUdon.Editor.ClientManager
             EnvConfig.ConfigurePlayerSettings();
             VRC_SdkBuilder.shouldBuildUnityPackage = false;
             AssetExporter.CleanupUnityPackageExport(); // force unity package rebuild on next publish
-            VRC_SdkBuilder.numClientsToLaunch = 0;
+            VRC_SdkBuilder.RunSetNumClients(0);
             VRC_SdkBuilder.forceNoVR = true;
             VRC_SdkBuilder.PreBuildBehaviourPackaging();
-            VRC_SdkBuilder.ExportSceneResourceAndRun();
+            VRC_SdkBuilder.RunExportSceneResourceAndRun();
             StartClients();
         }
 
@@ -213,7 +214,7 @@ namespace GotoUdon.Editor.ClientManager
                 {
                     name = "",
                     profile = maxProfile + 1,
-                    duplicates = 1,
+                    instances = 1,
                     enabled = true
                 });
             });
@@ -232,7 +233,7 @@ namespace GotoUdon.Editor.ClientManager
             if (_localTesting)
             {
                 GUILayout.Label("Num of", GUILayout.Width(45));
-                settings.duplicates = EditorGUILayout.IntField(settings.duplicates, GUILayout.Width(20));
+                settings.instances = EditorGUILayout.IntField(settings.instances, GUILayout.Width(20));
             }
 
             GUILayout.Label("Enabled", GUILayout.Width(55));
@@ -244,30 +245,24 @@ namespace GotoUdon.Editor.ClientManager
             GUILayout.Label("VR", GUILayout.Width(20));
             settings.vr = EditorGUILayout.Toggle(settings.vr, GUILayout.Width(15));
 
-            List<GotoUdonInternalState.ClientProcess>
-                clientProcess = GotoUdonInternalState.Instance.GetProcessesByProfile(settings.profile);
-            if (clientProcess.Count > 0)
+            bool isRunning = ClientProcessesManager.IsAnyRunning(settings.profile);
+            if (isRunning)
             {
-                string all = clientProcess.Count > 1 ? " All " + clientProcess.Count : "";
-                SimpleGUI.ActionButton("Stop" + all, () => clientProcess.ForEach(p => p.StopProcess()), GUILayout.Width(65));
-                SimpleGUI.ActionButton("Restart" + all,
-                    () => _clientsManager.StartClients(true, _keepInstance, _keepInstanceForce, _localTesting, settings),
+                SimpleGUI.ActionButton("Stop All", () => ClientProcessesManager.KillProfile(settings.profile), GUILayout.Width(65));
+                SimpleGUI.ActionButton("Restart All",
+                    () =>
+                    {
+                        ClientProcessesManager.KillProfile(settings.profile);
+                        _clientsManager.StartClients(_keepInstance, _keepInstanceForce, _localTesting, settings);
+                    },
                     GUILayout.Width(90));
-                if (!_localTesting)
-                    SimpleGUI.ActionButton("Keep room" + all,
-                        () => _clientsManager.StartClients(true, true, _keepInstanceForce, _localTesting, settings),
-                        GUILayout.Width(100));
             }
 
-            if (_localTesting || clientProcess.Count == 0)
+            if (_localTesting || !isRunning)
             {
                 SimpleGUI.ActionButton("Start One",
-                    () => _clientsManager.StartClients(false, _keepInstance, _keepInstanceForce, _localTesting, settings.withDuplicates(1)),
+                    () => _clientsManager.StartClients(_keepInstance, _keepInstanceForce, _localTesting, settings.WithInstances(1)),
                     GUILayout.Width(80));
-                if (!_localTesting)
-                    SimpleGUI.ActionButton("Start One [keep room]",
-                        () => _clientsManager.StartClients(false, true, _keepInstanceForce, _localTesting, settings.withDuplicates(1)),
-                        GUILayout.Width(140));
             }
 
             bool actionButton = GUILayout.Button(buttonAction, GUILayout.Width(70));
@@ -279,12 +274,12 @@ namespace GotoUdon.Editor.ClientManager
 
         protected void OnEnable()
         {
-            _settings = AssetDatabase.LoadAssetAtPath<ClientManagerSettings>("Assets/GotoUdon/ClientManagerSettings.asset");
+            _settings = AssetDatabase.LoadAssetAtPath<ClientManagerSettings>("Assets/GotoUdon/Settings/ClientManagerSettings.asset");
             if (_settings == null)
             {
                 _settings = CreateInstance<ClientManagerSettings>();
                 _settings.Init();
-                AssetDatabase.CreateAsset(_settings, "Assets/GotoUdon/ClientManagerSettings.asset");
+                AssetDatabase.CreateAsset(_settings, "Assets/GotoUdon/Settings/ClientManagerSettings.asset");
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }

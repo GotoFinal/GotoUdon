@@ -73,7 +73,6 @@ Assets/UdonSharp/Scripts/Editor.meta
 /Assets/UdonSharp/
 /Assets/VRChat Examples/
 /Assets/GotoUdonTestingPlaygound/
-/Assets/GotoUdon/GotoUdonSettings.asset
 /Assets/GotoUdonTestingPlaygound.meta
 /Assets/Plugins.meta
 /Assets/Robot Kyle.meta
@@ -81,13 +80,10 @@ Assets/UdonSharp/Scripts/Editor.meta
 /Assets/Udon.meta
 /Assets/UdonSharp.meta
 /Assets/VRChat Examples.meta
-/Assets/GotoUdon/GotoUdonSettings.asset.meta
 /Assets/Plugins/Editor.meta
 /Assets/GotoUdon/Releases/
 /Assets/GotoUdon/Releases.meta
-/Assets/GotoUdon/ClientManagerSettings.asset
-/Assets/GotoUdon/ClientManagerSettings.asset.meta
 /Assets/Gizmos/
 /Assets/Gizmos.meta
-/Assets/GotoUdon/GotoUdonInternalState.asset
-/Assets/GotoUdon/GotoUdonInternalState.asset.meta
+/Assets/GotoUdon/Settings/*
+!/Assets/GotoUdon/Settings/VRCSDKVersion

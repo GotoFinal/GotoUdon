@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using GotoUdon.Utils;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,36 +15,6 @@ namespace GotoUdon
         public string instanceId;
         public string accessType;
 
-        public Dictionary<int, List<ClientProcess>> GetProcessesByProfile()
-        {
-            Dictionary<int, List<ClientProcess>> profileToProcessMapping = new Dictionary<int, List<ClientProcess>>();
-            foreach (var clientProcess in processes)
-            {
-                if (!profileToProcessMapping.ContainsKey(clientProcess.profile))
-                {
-                    profileToProcessMapping[clientProcess.profile] = new List<ClientProcess>();
-                }
-
-                if (clientProcess.Process != null && !clientProcess.Process.HasExited)
-                {
-                    profileToProcessMapping[clientProcess.profile].Add(clientProcess);
-                }
-            }
-
-            return profileToProcessMapping;
-        }
-
-        public List<ClientProcess> GetProcessesByProfile(int profile)
-        {
-            Dictionary<int, List<ClientProcess>> processesByProfile = GetProcessesByProfile();
-            if (!processesByProfile.ContainsKey(profile))
-            {
-                return new List<ClientProcess>();
-            }
-
-            return processesByProfile[profile];
-        }
-
         public void Init()
         {
             if (processes == null) processes = new List<ClientProcess>();
@@ -57,12 +24,12 @@ namespace GotoUdon
         {
 #if UNITY_EDITOR
             GotoUdonInternalState settings =
-                AssetDatabase.LoadAssetAtPath<GotoUdonInternalState>("Assets/GotoUdon/GotoUdonInternalState.asset");
+                AssetDatabase.LoadAssetAtPath<GotoUdonInternalState>("Assets/GotoUdon/Settings/GotoUdonInternalState.asset");
             if (settings == null)
             {
                 settings = CreateInstance<GotoUdonInternalState>();
                 settings.Init();
-                AssetDatabase.CreateAsset(settings, "Assets/GotoUdon/GotoUdonInternalState.asset");
+                AssetDatabase.CreateAsset(settings, "Assets/GotoUdon/Settings/GotoUdonInternalState.asset");
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
@@ -74,55 +41,5 @@ namespace GotoUdon
 #endif
         }
 
-        [Serializable]
-        public class ClientProcess
-        {
-            public int pid;
-
-            public int profile;
-
-            public Process Process
-            {
-                get
-                {
-                    if (pid == 0) return null;
-                    try
-                    {
-                        Process process = Process.GetProcessById(pid);
-                        return !process.HasExited ? process : null;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            public void StopProcess()
-            {
-                try
-                {
-                    Process process = Process;
-                    if (process != null)
-                    {
-                        if (!process.CloseMainWindow())
-                        {
-                            GotoLog.Warn($"Failed to exit profile {profile} process {pid}, application refused to close window.");
-                            process.Kill();
-                        }
-
-                        if (!process.WaitForExit(10000))
-                        {
-                            GotoLog.Warn($"Failed to exit profile {profile} process {pid}, waited 10 seconds but its still alive.");
-                            process.Kill();
-                        }
-                    }
-                }
-                catch
-                {
-                    GotoLog.Warn($"Failed to exit profile {profile} process {pid}");
-                }
-            }
-        }
     }
 }

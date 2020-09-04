@@ -143,10 +143,10 @@ namespace GotoUdon.Editor
         private void UpdateSdk()
         {
             if (_updateCheckerSdkResponse == null || _updateCheckerSdkResponse.IsError) return;
-
+        
             ReleaseAsset unityPackage = _updateCheckerSdkResponse.ReleaseInfo.UnityPackage;
             if (unityPackage == null) return;
-
+        
             _downloadingSdk = true;
             Updater.Update(_updateCheckerSdkResponse.ReleaseInfo.UnityPackage, result =>
             {

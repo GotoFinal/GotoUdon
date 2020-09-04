@@ -1,21 +1,23 @@
-﻿namespace GotoUdon.Editor.ClientManager
+﻿using System;
+
+namespace GotoUdon.Editor.ClientManager
 {
-    [System.Serializable]
+    [Serializable]
     public class ClientSettings
     {
         public string name;
         public int profile;
-        public int duplicates = 1;
+        public int instances = 1;
         public bool enabled;
         public bool vr;
 
-        public ClientSettings withDuplicates(int duplicates)
+        public ClientSettings WithInstances(int instances)
         {
             return new ClientSettings
             {
                 name = name,
                 profile = profile,
-                duplicates = duplicates,
+                instances = instances,
                 enabled = enabled,
                 vr = vr
             };

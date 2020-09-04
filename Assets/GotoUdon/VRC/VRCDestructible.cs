@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION_TEMP_DISABLED
+﻿#if GOTOUDON_SIMULATION
 using VRC.SDKBase;
 
 namespace GotoUdon.VRC

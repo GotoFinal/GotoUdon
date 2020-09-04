@@ -68,12 +68,12 @@ namespace GotoUdon
         {
 #if UNITY_EDITOR
             GotoUdonSettings settings =
-                AssetDatabase.LoadAssetAtPath<GotoUdonSettings>("Assets/GotoUdon/GotoUdonSettings.asset");
+                AssetDatabase.LoadAssetAtPath<GotoUdonSettings>("Assets/GotoUdon/Settings/GotoUdonSettings.asset");
             if (settings == null)
             {
                 settings = CreateInstance<GotoUdonSettings>();
                 settings.Init();
-                AssetDatabase.CreateAsset(settings, "Assets/GotoUdon/GotoUdonSettings.asset");
+                AssetDatabase.CreateAsset(settings, "Assets/GotoUdon/Settings/GotoUdonSettings.asset");
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }

@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION_TEMP_DISABLED
+﻿#if GOTOUDON_SIMULATION
 using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
@@ -95,7 +95,7 @@ namespace GotoUdon.VRC
             {
                 foreach (SimulatedVRCPlayer player in _delayedPlayers)
                 {
-                    ForAllUdon(behaviour => behaviour.RunEvent(player.VRCPlayer));
+                    DispatchEvent("_onPlayerJoined", ("player", player.VRCPlayer));
                 }
 
                 _delayedPlayers.Clear();
@@ -125,7 +125,7 @@ namespace GotoUdon.VRC
             _hasStarted = true;
             foreach (var delayed in _delayedPlayers)
             {
-                ForAllUdon(behaviour => behaviour.OnPlayerJoined(delayed.VRCPlayer));
+                DispatchEvent("_onPlayerJoined", ("player", delayed.VRCPlayer));
             }
 
             _delayedPlayers.Clear();
@@ -133,7 +133,7 @@ namespace GotoUdon.VRC
 
         public void RemovePlayer(SimulatedVRCPlayer player)
         {
-            ForAllUdon(behaviour => behaviour.OnPlayerLeft(player.VRCPlayer));
+            DispatchEvent("_onPlayerLeft", ("player", player.VRCPlayer));
 
             VRCPlayerApi.sPlayers.Remove(player.VRCPlayer);
 
@@ -162,6 +162,11 @@ namespace GotoUdon.VRC
             {
                 action(behaviour);
             }
+        }
+
+        private void DispatchEvent(string eventName, params (string symbolName, object value)[] eventVariables)
+        {
+            ForAllUdon(behaviour => behaviour.RunEvent(eventName, eventVariables));
         }
 
         public static VRCEmulator InitEmulator(GotoUdonInternalState state, GotoUdonSettings settings)
@@ -234,7 +239,7 @@ namespace GotoUdon.VRC
 #if UNITY_EDITOR
         static VRCEmulator()
         {
-            UdonBehaviour.RunProgramAsRPCHook = (behaviour, target, evt) => behaviour.SendCustomEvent(evt);
+            UdonBehaviour.SendCustomNetworkEventHook = (behaviour, target, evt) => behaviour.SendCustomEvent(evt);
             Networking._GetUniqueName = obj => GetGameObjectPath(obj.transform);
             Networking._RPC = (destination, obj, name, arg) =>
             {

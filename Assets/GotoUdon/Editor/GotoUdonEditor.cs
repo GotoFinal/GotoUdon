@@ -12,8 +12,8 @@ using UnityEngine;
 
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.3.1";
-    public const string ImplementedSDKVersion = "2020.06.16.20.53";
+    public const string VERSION = "v1.4.0";
+    public const string ImplementedSDKVersion = "2020.05.06.12.14";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
     [MenuItem("Window/GotoUdon/Debugger Tools")]
@@ -38,7 +38,7 @@ public class GotoUdonEditor : EditorWindow
         UpdaterEditor.Instance.DrawVersionInformation();
 
 
-#if GOTOUDON_SIMULATION_TEMP_DISABLED
+#if GOTOUDON_SIMULATION
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
 #endif
 
@@ -54,7 +54,7 @@ public class GotoUdonEditor : EditorWindow
         GUILayout.EndScrollView();
     }
 
-#if GOTOUDON_SIMULATION_TEMP_DISABLED
+#if GOTOUDON_SIMULATION
     private EmulationController _controller = EmulationController.Instance;
 
     private PlayerTemplate _currentlyEdited = null;
@@ -123,7 +123,7 @@ public class GotoUdonEditor : EditorWindow
         DrawGlobalOptions(GotoUdonSettings.Instance);
         SimpleGUI.SectionSpacing();
 
-#if GOTOUDON_SIMULATION_TEMP_DISABLED
+#if GOTOUDON_SIMULATION
         List<PlayerTemplate> templates = GotoUdonSettings.Instance.playerTemplates;
         if (templates.Count == 0)
             templates.Add(PlayerTemplate.CreateNewPlayer(true));
@@ -154,20 +154,16 @@ public class GotoUdonEditor : EditorWindow
     private void DrawGlobalOptions(GotoUdonSettings settings)
     {
         settings.Init();
+        if (!settings.IsSimulatorInstalled)
+        {
+            SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
+        }
+        else
+        {
+            SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
+        }
 
-        SimpleGUI.WarningBox(true,
-            "Sorry, currently simulator is not available. Please use client manager with new local testing functionality.\n" +
-            "Emulation will be restored in 1.4.0");
-        // if (!settings.IsSimulatorInstalled)
-        // {
-        //     SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
-        // }
-        // else
-        // {
-        //     SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
-        // }
-
-#if GOTOUDON_SIMULATION_TEMP_DISABLED
+#if GOTOUDON_SIMULATION
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
             "You need to select some avatar prefab to use this resource. You can find ybot-mini in Assets folder with this resource.");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,
