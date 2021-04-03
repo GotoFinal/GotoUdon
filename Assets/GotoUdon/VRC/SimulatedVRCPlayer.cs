@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_LEGACY
 using System;
 using System.Collections.Generic;
 using UnityEngine;

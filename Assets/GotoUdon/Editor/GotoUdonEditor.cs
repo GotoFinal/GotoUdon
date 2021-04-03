@@ -12,8 +12,8 @@ using UnityEngine;
 
 public class GotoUdonEditor : EditorWindow
 {
-    public const string VERSION = "v1.4.0";
-    public const string ImplementedSDKVersion = "2020.05.06.12.14";
+    public const string VERSION = "v1.5.0";
+    public const string ImplementedSDKVersion = "2021.03.22.18.27";
     public static string CurrentSDKVersion => VRC.Core.SDKClientUtilities.GetSDKVersionDate();
 
     [MenuItem("Window/GotoUdon/Debugger Tools")]
@@ -35,12 +35,10 @@ public class GotoUdonEditor : EditorWindow
 #if GOTOUDON_DEV
         ReleaseHelper.DrawReleaseHelper();
 #endif
+
+#if GOTOUDON_SIMULATION_LEGACY
         UpdaterEditor.Instance.DrawVersionInformation();
-
-
-#if GOTOUDON_SIMULATION
         ImplementationValidator.DrawValidationErrors(ImplementationValidator.ValidateEmulator());
-#endif
 
         SimpleGUI.WarningBox(true,
             "NETWORK AND VRCHAT PHYSICS ARE NOT SIMULATED, NETWORK RELATED SETTINGS ONLY AFFECT RETURNED VALUES IN SCRIPTS, DEFAULT UNITY PHYSICS APPLIES (might be improved later)");
@@ -49,12 +47,29 @@ public class GotoUdonEditor : EditorWindow
 
         if (EditorApplication.isPlaying) DrawPlayersEditor();
         else DrawTemplatesEditor();
+#else
+        _scroll = GUILayout.BeginScrollView(_scroll, GUIStyle.none);
+#endif
+
+        if (GUILayout.Button(
+            $"============ IMPORTANT ============\nFor emulation use CyanEmu instead: https://github.com/CyanLaser/CyanEmu",
+            EditorStyles.helpBox))
+        {
+            Application.OpenURL("https://github.com/CyanLaser/CyanEmu");
+        }
+
+        if (SimpleGUI.DrawFoldout("Unsafe Simulation", "UNSAFE") &&
+            SimpleGUI.DrawFoldout("Unsafe Simulation", "VERY UNSAFE"))
+        {
+            if (!EditorApplication.isPlaying)
+                DrawGlobalOptions(GotoUdonSettings.Instance);
+        }
 
         SimpleGUI.DrawFooterInformation();
         GUILayout.EndScrollView();
     }
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_LEGACY
     private EmulationController _controller = EmulationController.Instance;
 
     private PlayerTemplate _currentlyEdited = null;
@@ -123,7 +138,7 @@ public class GotoUdonEditor : EditorWindow
         DrawGlobalOptions(GotoUdonSettings.Instance);
         SimpleGUI.SectionSpacing();
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_LEGACY
         List<PlayerTemplate> templates = GotoUdonSettings.Instance.playerTemplates;
         if (templates.Count == 0)
             templates.Add(PlayerTemplate.CreateNewPlayer(true));
@@ -156,14 +171,14 @@ public class GotoUdonEditor : EditorWindow
         settings.Init();
         if (!settings.IsSimulatorInstalled)
         {
-            SimpleGUI.ActionButton("Install simulator", () => settings.IsSimulatorInstalled = true);
+            SimpleGUI.ActionButton("Install legacy simulator (probably doesnt work)", () => settings.IsSimulatorInstalled = true);
         }
         else
         {
             SimpleGUI.ActionButton("Remove simulator", () => settings.IsSimulatorInstalled = false);
         }
 
-#if GOTOUDON_SIMULATION
+#if GOTOUDON_SIMULATION_LEGACY
         SimpleGUI.ErrorBox(settings.avatarPrefab == null,
             "You need to select some avatar prefab to use this resource. You can find ybot-mini in Assets folder with this resource.");
         SimpleGUI.ErrorBox(settings.spawnPoint == null,

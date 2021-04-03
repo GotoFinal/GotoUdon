@@ -18,7 +18,7 @@ namespace GotoUdon
         public Transform spawnPoint;
         public List<PlayerTemplate> playerTemplates = new List<PlayerTemplate>();
 
-        private const string SIMULATOR_DEFINE = "GOTOUDON_SIMULATION";
+        private const string SIMULATOR_DEFINE = "GOTOUDON_SIMULATION_LEGACY";
 
 #if UNITY_EDITOR
         public bool IsSimulatorInstalled

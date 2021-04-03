@@ -85,12 +85,12 @@ namespace GotoUdon.Editor
                 if (releaseInfo.UnityPackage != null &&
                     SimpleGUI.InfoBox(
                         VersionUtils.IsRightNewerThanLeft(currentSdkVersion, newestSdkVersion),
-                        $"There is new VRChat UDON SDK version available: {releaseInfo.Version}! Click to update!\n{releaseInfo.Name}\n{releaseInfo.Description}")
+                        $"There is new VRChat UDON SDK version available: {releaseInfo.Version}!\n{releaseInfo.Name}\n{releaseInfo.Description}")
                 )
                 {
                     GUILayout.BeginHorizontal();
-                    if (!_downloadingSdk)
-                        SimpleGUI.ActionButton($"Update to {releaseInfo.Version}!", UpdateSdk);
+                    // if (!_downloadingSdk)
+                    //     SimpleGUI.ActionButton($"Update to {releaseInfo.Version}!", UpdateSdk);
                     SimpleGUI.ActionButton("Download manually.", () => Application.OpenURL(releaseInfo.UnityPackage.DownloadUrl));
                     GUILayout.EndHorizontal();
                 }

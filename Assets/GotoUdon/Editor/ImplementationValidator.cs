@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_LEGACY
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -47,7 +47,7 @@ namespace GotoUdon.Editor
                     $"Please update your VRChat SDK, this GotoUdon was made for: {GotoUdonEditor.ImplementedSDKVersion}");
                 SimpleGUI.ErrorBox(versionStatus == VRCVersionStatus.TooNew,
                     "Please update GotoUdon if new version is available, if not you can try to keep using current version, but some features might not work correctly.\n" +
-                    "You can also check our discord to see if we are already working on update.");
+                    "You can also check our discord to see if we are already working on update.\n" + "For emulation please use CyanEmu instead: https://github.com/CyanLaser/CyanEmu");
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace GotoUdon.Editor
                     $"GotoUdon {GotoUdonEditor.VERSION} is not compatible with VRChat sdk {GotoUdonEditor.CurrentSDKVersion}.\n");
             if (versionStatus == VRCVersionStatus.Same)
             {
-                errorStr.AppendLine("Please report this author, this seems to be a bug. This version of sdk should be fully supported.");
+                errorStr.AppendLine("This project is no longer maintained, Please use CyanEmu instead: https://github.com/CyanLaser/CyanEmu");
             }
 
             errorStr.AppendLine("Auto detected problematic methods: ");

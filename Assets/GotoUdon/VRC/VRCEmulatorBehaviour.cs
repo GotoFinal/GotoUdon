@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_LEGACY
 using UnityEngine;
 
 namespace GotoUdon.VRC

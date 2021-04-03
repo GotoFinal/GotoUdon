@@ -1,4 +1,4 @@
-﻿#if GOTOUDON_SIMULATION
+﻿#if GOTOUDON_SIMULATION_LEGACY
 using System;
 using System.Collections.Generic;
 using GotoUdon.Editor;
@@ -133,9 +133,8 @@ namespace GotoUdon.VRC
 
         public void RemovePlayer(SimulatedVRCPlayer player)
         {
-            DispatchEvent("_onPlayerLeft", ("player", player.VRCPlayer));
-
             VRCPlayerApi.sPlayers.Remove(player.VRCPlayer);
+            DispatchEvent("_onPlayerLeft", ("player", player.VRCPlayer));
 
             // might cause weird issues? but doing nothing could do this too.
             if (master == player.VRCPlayer)
@@ -249,7 +248,6 @@ namespace GotoUdon.VRC
             {
                 GotoLog.Log($"[Networking] RPCtoPlayer, dest: {destination}, obj: {obj}, name: {name}, args: {string.Join(", ", arg)}");
             };
-            Networking._Message = (type, o, arg3) => { };
             Networking._IsNetworkSettled = () => Instance?.isNetworkSettled ?? true;
             Networking._IsMaster = () => Instance?.localPlayer == Instance?.master;
             Networking._LocalPlayer = () => Instance?.localPlayer;
